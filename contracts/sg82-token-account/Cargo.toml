@@ -1,10 +1,10 @@
 [package]
-name = "sg-token-account"
-version = { workspace = true }
+name = "sg82-token-account"
+version     = { workspace = true }
+edition     = { workspace = true }
+repository  = { workspace = true }
 authors = [ "Kromsten <s@noreply.megarock.labs>" ]
-edition = "2021"
 description = "Example contract showcasing cw81 that uses the last signature in the storage for verification"
-repository = "https://github.com/MegaRockLabs/cw-extra"
 
 
 exclude = [

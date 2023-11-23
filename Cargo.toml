@@ -7,7 +7,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version    = "0.2.0"
+version    = "1.0.0"
 edition    = "2021"
 repository = "https://github.com/MegaRockLabs/cw-extra"
 
@@ -39,8 +39,8 @@ cw721                   = "0.18.0"
 sg721                   = "3.3.0"
 sg721-base              = "3.3.0"
 
-sg-token-account      = { path = "contracts/sg-token-account" }
-sg-tba-registry       = { path = "contracts/sg-tba-registry" }
+sg82-token-account      = { path = "contracts/sg82-token-account" }
+sg83-tba-registry       = { path = "contracts/sg83-tba-registry" }
 
 [profile.release.package.cw81]
 codegen-units = 1

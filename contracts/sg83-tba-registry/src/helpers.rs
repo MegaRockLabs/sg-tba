@@ -58,13 +58,12 @@ impl Cw83TokenRegistryContract {
         token_id: String,
     ) -> StdResult<Binary> {
 
-        let msg = sg_token_account::msg::InstantiateMsg {
+        let msg = sg82_token_account::msg::InstantiateMsg {
             owner,
             pubkey,
             token_contract: token_contract.clone(),
             token_id: token_id.clone(),
         };
-        
 
         to_binary(&msg)
     }

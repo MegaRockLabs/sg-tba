@@ -1,6 +1,6 @@
 use cosmwasm_std::from_binary;
 use test_context::test_context;
-use sg_tba_registry::msg::{self as RegistryMsg, TokenInfo};
+use sg83_tba_registry::msg::{self as RegistryMsg, TokenInfo};
 use RegistryMsg::QueryMsg as RegistryQuery;
 
 use crate::helpers::{

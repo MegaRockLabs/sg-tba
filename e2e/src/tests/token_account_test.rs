@@ -5,7 +5,7 @@ use cosmwasm_std::{Binary, CosmosMsg, BankMsg, WasmMsg, from_binary, to_binary};
 use cw_ownable::Ownership;
 use test_context::test_context;
 
-use sg_token_account::msg::{
+use sg82_token_account::msg::{
     QueryMsg, 
     AssetsResponse, 
     Status, 
@@ -604,21 +604,14 @@ fn direct_mint(chain: &mut Chain) {
         msg: to_binary(&mint_msg).unwrap()
     };
 
-    let execute_msg = WasmMsg::Execute { 
-        contract_addr: data.token_account.clone(),
-        msg: to_binary(&account_msg).unwrap(), 
-        funds: vec![]
-    };
-
 
     chain.orc.execute(
         ACOUNT_NAME,
         "acc_tokens_mint",
-        &execute_msg,
+        &account_msg,
         &user.key,
         vec![],
     ).unwrap();
-
 
 
     let tokens : KnownTokensResponse = wasm_query_typed(

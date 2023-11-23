@@ -38,7 +38,7 @@ pub fn create_account(
 
     LAST_ATTEMPTING.save(deps.storage, &token_info)?;
 
-    let init_msg = sg_token_account::msg::InstantiateMsg {
+    let init_msg = sg82_token_account::msg::InstantiateMsg {
         owner: sender.clone(),
         token_contract: token_info.collection.clone(),
         token_id: token_info.id.clone(),
@@ -89,7 +89,7 @@ pub fn update_account_owner(
         (token_info.collection.as_str(), token_info.id.as_str())
     )?;
 
-    let msg = sg_token_account::msg::ExecuteMsg::UpdateOwnership { 
+    let msg = sg82_token_account::msg::ExecuteMsg::UpdateOwnership { 
         new_owner: owner.to_string(), 
         new_pubkey
     };
@@ -121,7 +121,7 @@ pub fn freeze_account(
         (token_info.collection.as_str(), token_info.id.as_str())
     )?;
 
-    let msg = sg_token_account::msg::ExecuteMsg::Freeze {};
+    let msg = sg82_token_account::msg::ExecuteMsg::Freeze {};
 
     let msg = CosmosMsg::Wasm(WasmMsg::Execute { 
         contract_addr, 
@@ -150,7 +150,7 @@ pub fn unfreeze_account(
         (token_info.collection.as_str(), token_info.id.as_str())
     )?;
 
-    let msg = sg_token_account::msg::ExecuteMsg::Unfreeze {};
+    let msg = sg82_token_account::msg::ExecuteMsg::Unfreeze {};
 
     let msg = CosmosMsg::Wasm(WasmMsg::Execute { 
         contract_addr, 

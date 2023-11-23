@@ -860,7 +860,7 @@ checksum = "23d2f3407d9a573d666de4b5bdf10569d73ca9478087346697dcbae6244bfbcd"
 
 [[package]]
 name = "e2e"
-version = "0.2.0"
+version = "1.0.0"
 dependencies = [
  "assert_matches",
  "async-trait",
@@ -883,10 +883,10 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
- "sg-tba-registry",
- "sg-token-account",
  "sg721",
  "sg721-base",
+ "sg82-token-account",
+ "sg83-tba-registry",
  "test-context",
  "tokio",
 ]
@@ -2284,46 +2284,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sg-tba-registry"
-version = "0.2.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cw-storage-plus 1.1.0",
- "cw-utils 1.0.2",
- "cw2 1.1.1",
- "cw22",
- "cw721 0.18.0",
- "cw82",
- "cw83",
- "semver",
- "sg-token-account",
- "sg721-base",
- "thiserror",
-]
-
-[[package]]
-name = "sg-token-account"
-version = "0.2.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cw-ownable",
- "cw-storage-plus 1.1.0",
- "cw-utils 1.0.2",
- "cw2 1.1.1",
- "cw22",
- "cw721 0.18.0",
- "cw82",
- "cw83",
- "k256 0.13.1",
- "semver",
- "sg721-base",
- "sha2 0.10.8",
- "thiserror",
-]
-
-[[package]]
 name = "sg721"
 version = "3.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2357,6 +2317,46 @@ dependencies = [
  "sg721",
  "thiserror",
  "url",
+]
+
+[[package]]
+name = "sg82-token-account"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-ownable",
+ "cw-storage-plus 1.1.0",
+ "cw-utils 1.0.2",
+ "cw2 1.1.1",
+ "cw22",
+ "cw721 0.18.0",
+ "cw82",
+ "cw83",
+ "k256 0.13.1",
+ "semver",
+ "sg721-base",
+ "sha2 0.10.8",
+ "thiserror",
+]
+
+[[package]]
+name = "sg83-tba-registry"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-storage-plus 1.1.0",
+ "cw-utils 1.0.2",
+ "cw2 1.1.1",
+ "cw22",
+ "cw721 0.18.0",
+ "cw82",
+ "cw83",
+ "semver",
+ "sg721-base",
+ "sg82-token-account",
+ "thiserror",
 ]
 
 [[package]]

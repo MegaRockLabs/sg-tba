@@ -1,10 +1,10 @@
 [package]
-name = "sg-tba-registry"
-version = { workspace = true }
+name        = "sg83-tba-registry"
+version     = { workspace = true }
+edition     = { workspace = true }
+repository  = { workspace = true }
 authors = [ "Kromsten <s@noreply.megarock.labs>" ]
-edition = "2021"
 description = "Example contract showcasing cw83 that uses the last signature in the storage for verification"
-repository = "https://github.com/MegaRockLabs/cw-extra"
 
 
 exclude = [
@@ -32,4 +32,4 @@ cw83                = { workspace = true }
 cw22                = { workspace = true }
 cw721               = { workspace = true }
 sg721-base          = { workspace = true, features = ["library"] }
-sg-token-account    = { workspace = true, features = ["library"] }
+sg82-token-account    = { workspace = true, features = ["library"] }

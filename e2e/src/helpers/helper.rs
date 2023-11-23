@@ -13,14 +13,14 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Timestamp, Empty, CosmosMsg, WasmMsg, Binary, to_binary, from_binary};
 
 use cw1::CanExecuteResponse;
-use sg_token_account::msg::QueryMsg;
-use sg_tba_registry::msg::{InstantiateMsg, CreateAccountMsg, TokenInfo};
+use sg82_token_account::msg::QueryMsg;
+use sg83_tba_registry::msg::{InstantiateMsg, CreateAccountMsg, TokenInfo};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
 // contract names used by cosm-orc to register stored code ids / instantiated addresses:
-pub const REGISTRY_NAME     : &str = "cw83_tba_registry";
-pub const ACOUNT_NAME       : &str = "cw82_token_account";
+pub const REGISTRY_NAME     : &str = "sg83_tba_registry";
+pub const ACOUNT_NAME       : &str = "sg82_token_account";
 pub const PROXY_NAME        : &str = "cw1_whitelist";
 pub const COLLECTION_NAME   : &str = "sg721_base";
 
@@ -182,7 +182,7 @@ pub fn create_token_account(
 
     let chain_id = chain.cfg.orc_cfg.chain_cfg.chain_id.clone();
 
-    let init_msg = sg_tba_registry::msg::CreateInitMsg {
+    let init_msg = sg83_tba_registry::msg::CreateInitMsg {
         pubkey,
         token_info: TokenInfo {
             collection: token_contract,
@@ -195,7 +195,7 @@ pub fn create_token_account(
     chain.orc.execute(
         REGISTRY_NAME, 
         "registry_create_account", 
-        &sg_tba_registry::msg::ExecuteMsg::CreateAccount(
+        &sg83_tba_registry::msg::ExecuteMsg::CreateAccount(
             CreateAccountMsg {
                 code_id,
                 chain_id,

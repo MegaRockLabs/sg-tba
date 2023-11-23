@@ -25,6 +25,7 @@ pub fn try_mint_token(
     deps: DepsMut,
     sender: Addr,
     collection: String,
+    msg: Binary,
     funds: Vec<Coin>
 ) -> Result<Response, ContractError> {
     assert_owner(deps.storage, &sender)?;
@@ -32,10 +33,11 @@ pub fn try_mint_token(
 
     MINT_CACHE.save(deps.storage, &collection)?;
 
+    
     Ok(Response::new().add_submessage(SubMsg {
         msg: WasmMsg::Execute { 
             contract_addr: collection, 
-            msg: to_binary(&vending_minter::msg::ExecuteMsg::Mint {})?, 
+            msg, 
             funds
         }.into(),
         reply_on: ReplyOn::Success,

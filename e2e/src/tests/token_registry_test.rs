@@ -50,7 +50,6 @@ fn test_queries(chain: &mut Chain) {
     assert_eq!(first_account.id, firt_col_account.id);
 
 
-
     let res = wasm_query(
         chain, 
         &data.registry, 

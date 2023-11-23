@@ -79,10 +79,11 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
     match msg {
         ExecuteMsg::Execute { msgs } => try_execute(deps.as_ref(), info.sender, msgs),
 
-        ExecuteMsg::MintToken { collection } => try_mint_token(
+        ExecuteMsg::MintToken { collection, msg } => try_mint_token(
             deps,
             info.sender,
             collection, 
+            msg,
             info.funds
         ),
         

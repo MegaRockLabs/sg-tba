@@ -1,7 +1,7 @@
 use cosm_orc::orchestrator::cosm_orc::tokio_block;
 use cosm_tome::{modules::bank::model::SendRequest, chain::request::TxOptions};
 use cosm_tome::chain::coin::Coin;
-use cosmwasm_std::{Binary, CosmosMsg, BankMsg, WasmMsg, from_binary};
+use cosmwasm_std::{Binary, CosmosMsg, BankMsg, WasmMsg, from_binary, to_binary};
 use cw_ownable::Ownership;
 use test_context::test_context;
 
@@ -15,7 +15,7 @@ use sg_token_account::msg::{
 };
 
 
-use crate::helpers::helper::{mint_token, send_token, ACOUNT_NAME, create_token_account, get_init_address};
+use crate::helpers::helper::{mint_token, send_token, ACOUNT_NAME, create_token_account, get_init_address, instantiate_collection};
 use crate::helpers::{
     chain::Chain, helper::{full_setup, can_execute, wasm_query, wasm_query_typed},
 };
@@ -570,4 +570,78 @@ fn tokens_acknowlegement(chain: &mut Chain) {
     assert_eq!(res.tokens.len(), 2);
     assert_eq!(res.tokens.first().unwrap(), &String::from("1"));
     assert_eq!(res.tokens.last().unwrap(), &String::from("2"));
+}
+
+
+#[test_context(Chain)]
+#[test]
+#[ignore]
+fn direct_mint(chain: &mut Chain) {
+    let data = full_setup(chain).unwrap();
+    let user = chain.cfg.users[0].clone();
+    
+
+    let init_res = instantiate_collection(
+        chain, 
+        user.account.address.clone(),
+        data.token_account.clone(),
+        None,
+        &user.key
+    ).unwrap();
+
+    let collection  = get_init_address(init_res.res);
+
+
+    let mint_msg: sg721::ExecuteMsg<Option<cosmwasm_std::Empty>, cosmwasm_std::Empty> = sg721_base::ExecuteMsg::Mint { 
+        token_id: "1".to_string(),
+        owner: data.token_account.clone(),
+        token_uri: None, 
+        extension: None
+    };
+
+    let account_msg = TAExecuteMsg::MintToken { 
+        collection: collection.clone(), 
+        msg: to_binary(&mint_msg).unwrap()
+    };
+
+    let execute_msg = WasmMsg::Execute { 
+        contract_addr: data.token_account.clone(),
+        msg: to_binary(&account_msg).unwrap(), 
+        funds: vec![]
+    };
+
+
+    chain.orc.execute(
+        ACOUNT_NAME,
+        "acc_tokens_mint",
+        &execute_msg,
+        &user.key,
+        vec![],
+    ).unwrap();
+
+
+
+    let tokens : KnownTokensResponse = wasm_query_typed(
+        chain, 
+        &data.token_account, 
+        &QueryMsg::KnownTokens { skip: None, limit: None }
+    ).unwrap();
+    
+    assert_eq!(tokens.len(), 1);
+
+
+
+    let res : cw721::TokensResponse = wasm_query_typed(
+        chain, 
+        &collection, 
+        &sg721_base::QueryMsg::Tokens { 
+            owner: data.token_account.clone(),
+            start_after: None, 
+            limit: None 
+        }
+    ).unwrap();
+    assert_eq!(res.tokens.len(), 1);
+
+
+    
 }

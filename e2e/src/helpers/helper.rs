@@ -74,6 +74,7 @@ pub fn instantiate_collection(
     chain: &mut Chain,
     creator_addr: String,
     minter: String,
+    nonce: Option<&str>,
     key: &SigningKey,
 ) -> Result<ExecResponse, ProcessError> {
     // let infos: Vec<(String, DeployInfo)> =  chain.cfg.orc_cfg.contract_deploy_info.clone().into_iter().collect();
@@ -84,8 +85,8 @@ pub fn instantiate_collection(
         admin: Some(minter.clone().to_string()), 
         code_id, 
         msg: to_binary(&sg721::InstantiateMsg {
-            name: "test".into(),
-            symbol: "test".into(),
+            name: "test".to_string() + nonce.unwrap_or_default(),
+            symbol: "test".to_string() + nonce.unwrap_or_default(),
             minter: minter,
             collection_info: sg721::CollectionInfo {
                 creator: creator_addr,
@@ -98,7 +99,7 @@ pub fn instantiate_collection(
             }
         }).unwrap(),
         funds: vec![],
-        label: "collection".into(),
+        label: "collection".to_string() + nonce.unwrap_or_default(),
     });
 
     chain.orc.execute(
@@ -128,7 +129,6 @@ pub fn mint_token(
         token_uri: None, 
         extension: None
     };
-
 
     chain.orc.execute(
         PROXY_NAME,
@@ -254,6 +254,7 @@ pub fn full_setup(
         chain, 
         user.account.address.clone(), 
         proxy.clone().to_string(),
+        None,
         &user.key
     ).unwrap();
 

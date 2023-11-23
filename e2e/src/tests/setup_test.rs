@@ -40,6 +40,7 @@ fn test_instantiate_collection(chain: &mut Chain) {
         chain, 
         user.account.address,
         res.to_string(),
+        None,
         &user.key
     ).unwrap();
 
@@ -56,6 +57,7 @@ fn test_mint_token(chain: &mut Chain) {
         chain, 
         user.account.address.clone(), 
         proxy.clone().to_string(),
+        None,
         &user.key
     ).unwrap();
 

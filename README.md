@@ -1,6 +1,6 @@
 # Stargaze Token Bound Accounts
 
-Stargaze Production Contracts implementing [cw82](https://github.com/MegaRockLabs/cw-extra/tree/main/packages/cw82) and [cw83](https://github.com/MegaRockLabs/cw-extra/tree/main/packages/cw83) 
+Stargaze contracts implementing [cw82](https://github.com/MegaRockLabs/cw-extra/tree/main/packages/cw82) and [cw83](https://github.com/MegaRockLabs/cw-extra/tree/main/packages/cw83) 
 
 
 ## Token Registry

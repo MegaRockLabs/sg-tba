@@ -76,9 +76,9 @@ pub fn parse_payload(
 
     let payload : PayloadInfo = from_binary(payload.as_ref().unwrap())?;
     
-    if payload.account.len() < 1 || payload.algo != "amino" {
+    if payload.account.len() < 1 || payload.algo != "amino_direct" {
         return Err(StdError::GenericErr { 
-            msg: "Invalid payload. Must have an 'account' address and 'algo' must be 'amino'".into() 
+            msg: "Invalid payload. Must have an 'account' address and 'amino_direct' must be 'amino'".into() 
         })
     }
 

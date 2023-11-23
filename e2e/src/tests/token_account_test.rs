@@ -600,7 +600,7 @@ fn direct_mint(chain: &mut Chain) {
     };
 
     let account_msg = TAExecuteMsg::MintToken { 
-        collection: collection.clone(), 
+        minter: collection.clone(), 
         msg: to_binary(&mint_msg).unwrap()
     };
 

@@ -69,7 +69,8 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
     PUBKEY.save(deps.storage, &msg.pubkey)?;
 
 
-    Ok(Response::default())
+    Ok(Response::default()
+)
 }
 
 
@@ -79,13 +80,11 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
     match msg {
         ExecuteMsg::Execute { msgs } => try_execute(deps.as_ref(), info.sender, msgs),
 
-        ExecuteMsg::MintToken { collection, msg } => try_mint_token(
-            deps,
-            info.sender,
+        ExecuteMsg::MintToken { 
+            minter: 
             collection, 
-            msg,
-            info.funds
-        ),
+            msg 
+        } => try_mint_token(deps, info.sender, collection, msg, info.funds),
         
         ExecuteMsg::TransferToken { 
             collection, 
@@ -99,7 +98,6 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
             contract, 
             msg 
         } => try_send_token(deps, collection, token_id, contract, msg, info.funds),
-
 
         ExecuteMsg::UpdateKnownTokens { 
             collection, 

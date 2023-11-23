@@ -6,8 +6,6 @@ use cw_ownable::{assert_owner, initialize_owner, is_owner};
 use crate::{error::ContractError, utils::{assert_factory, is_ok_cosmos_msg, assert_status}, state::{KNOWN_TOKENS, PUBKEY, STATUS, MINT_CACHE}, msg::Status, contract::MINT_REPLY_ID};
 
 
-
-
 pub fn try_execute(
     deps: Deps,
     sender: Addr,
@@ -21,6 +19,7 @@ pub fn try_execute(
     Ok(Response::new().add_messages(msgs))
 }
 
+
 pub fn try_mint_token(
     deps: DepsMut,
     sender: Addr,
@@ -32,7 +31,6 @@ pub fn try_mint_token(
     assert_status(deps.storage)?;
 
     MINT_CACHE.save(deps.storage, &collection)?;
-
     
     Ok(Response::new().add_submessage(SubMsg {
         msg: WasmMsg::Execute { 
@@ -66,20 +64,6 @@ pub fn try_unfreeze(
     Ok(Response::default())
 }
 
-
-
-pub fn try_change_pubkey(
-    deps: DepsMut,
-    sender: Addr,
-    pubkey: Binary
-) -> Result<Response, ContractError> {
-    assert_owner(deps.storage, &sender)?;
-    assert_status(deps.storage)?;
-    PUBKEY.save(deps.storage, &pubkey)?;
-    Ok(Response::default())
-}
-
-
 pub fn try_update_ownership(
     deps: DepsMut,
     sender: Addr,
@@ -91,6 +75,23 @@ pub fn try_update_ownership(
     STATUS.save(deps.storage, &Status { frozen: false })?;
     PUBKEY.save(deps.storage, &new_pubkey)?;
     Ok(Response::default())
+}
+
+
+pub fn try_change_pubkey(
+    deps: DepsMut,
+    sender: Addr,
+    pubkey: Binary
+) -> Result<Response, ContractError> {
+    assert_owner(deps.storage, &sender)?;
+    assert_status(deps.storage)?;
+    PUBKEY.save(deps.storage, &pubkey)?;
+    Ok(Response::new()
+        .add_attributes(vec![
+            ("action", "change_pubkey"),
+            ("new_pubkey", pubkey.to_base64().as_str())
+        ])
+    )
 }
 
 
@@ -121,7 +122,7 @@ pub fn try_forget_tokens(
         );
     }
 
-    Ok(Response::default())
+    Ok(Response::new().add_attribute("action", "forget_tokens"))
 }
 
 
@@ -155,7 +156,7 @@ pub fn try_update_known_tokens(
         )?;
     }
 
-    Ok(Response::default())
+    Ok(Response::new().add_attribute("action", "update_known_tokens"))
 }
 
 
@@ -198,7 +199,10 @@ pub fn try_transfer_token(
         funds
     }.into();
 
-    Ok(Response::default().add_message(msg))
+    Ok(Response::default()
+        .add_message(msg)
+        .add_attribute("action", "transfer_token")
+    )
 }
 
 
@@ -228,5 +232,8 @@ pub fn try_send_token(
         funds
     }.into();
 
-    Ok(Response::default().add_message(msg))
+    Ok(Response::default()
+        .add_message(msg)
+        .add_attribute("action", "send_token")
+    )
 }

@@ -83,14 +83,8 @@ pub fn update_account_owner(
     update_for: Option<Addr>
 ) -> Result<Response, ContractError> {
 
-    let owner = if update_for.is_some () {
-        if !ADMINS.load(deps.storage)?.is_admin(sender.as_ref()) {
-            return Err(ContractError::Unauthorized {})
-        }
-        update_for.unwrap()
-    } else {
-        sender.clone()
-    };
+    let is_admin = ADMINS.load(deps.storage)?.is_admin(sender.as_ref());
+    let owner = update_for.unwrap_or(sender.clone());
 
     verify_nft_ownership(deps.as_ref(), owner.as_str(), token_info.clone())?;
 
@@ -98,6 +92,19 @@ pub fn update_account_owner(
         deps.storage, 
         (token_info.collection.as_str(), token_info.id.as_str())
     )?;
+
+    if !is_admin {
+        if owner != sender {
+            return Err(ContractError::Unauthorized {})
+        }
+        let status = deps.querier.query_wasm_smart::<sg82_token_account::msg::Status>(
+            contract_addr.clone(), 
+            &sg82_token_account::msg::QueryMsg::Status {}
+        )?;
+        if status.frozen {
+            return Err(ContractError::Unauthorized{})
+        }
+    }
 
     let msg = sg82_token_account::msg::ExecuteMsg::UpdateOwnership { 
         new_owner: owner.to_string(), 
@@ -209,6 +216,17 @@ pub fn migrate_account(
         deps.storage, 
         (token_info.collection.as_str(), token_info.id.as_str())
     )?;
+
+
+    let status = deps.querier.query_wasm_smart::<sg82_token_account::msg::Status>(
+        contract_addr.clone(), 
+        &sg82_token_account::msg::QueryMsg::Status {}
+    )?;
+
+    if status.frozen {
+        return Err(ContractError::Unauthorized{})
+    }
+
 
     let msg = CosmosMsg::Wasm(WasmMsg::Migrate { 
         contract_addr, 

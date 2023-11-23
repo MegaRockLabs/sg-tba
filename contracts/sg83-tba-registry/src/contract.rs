@@ -31,12 +31,20 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
         ]
     )?;
 
-    ADMINS.save(deps.storage, &AdminList {
-        admins: msg.admins.unwrap_or(vec![info.sender])
-    })?;
+    let admins = msg.admins.unwrap_or(vec![info.sender]);
+    let admins_str_list = admins.iter().map(|a| a.to_string()).collect::<Vec<String>>().join(", ");
+    let ids_str_list = msg.allowed_ids.iter().map(|a| a.to_string()).collect::<Vec<String>>().join(", ");
+
+    ADMINS.save(deps.storage, &AdminList { admins })?;
     ALLOWED_IDS.save(deps.storage, &msg.allowed_ids)?;
 
-    Ok(Response::default())
+    Ok(Response::new()
+        .add_attributes(vec![
+            ("action", "instantiate"),
+            ("admins", admins_str_list.as_str()),
+            ("allowed_ids", ids_str_list.as_str()),
+        ])
+    )
 }
 
 
@@ -107,6 +115,7 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
         ExecuteMsg::UnfreezeAccount { token_info } => unfreeze_account(deps, info.sender, token_info),
     }
 }
+
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn reply(deps: DepsMut, _ : Env, msg : Reply) 

@@ -1,3 +1,5 @@
+use std::vec;
+
 use cosmwasm_std::{Response, Env, Binary, DepsMut, Coin, SubMsg, ReplyOn, WasmMsg, to_binary, CosmosMsg, Addr};
 use cw83::CREATE_ACCOUNT_REPLY_ID;
 
@@ -60,6 +62,14 @@ pub fn create_account(
             reply_on: ReplyOn::Success,
             gas_limit: None
         })
+        .add_attributes(vec![
+            ("action",  if reset { "reset_account" } else { "create_account" }),
+            ("token_contract", token_info.collection.as_str()),
+            ("token_id", token_info.id.as_str()),
+            ("code_id", code_id.to_string().as_str()),
+            ("chain_id", chain_id.as_str()),
+            ("owner", sender.as_str())
+        ])
     )
 }
 
@@ -101,7 +111,13 @@ pub fn update_account_owner(
     });
 
     Ok(Response::default()
-       .add_message(msg)
+        .add_message(msg)
+        .add_attributes(vec![
+            ("action", "update_account_owner"),
+            ("token_contract", token_info.collection.as_str()),
+            ("token_id", token_info.id.as_str()),
+            ("new_owner", owner.to_string().as_str())
+        ])
     )
 }
 
@@ -131,6 +147,11 @@ pub fn freeze_account(
 
     Ok(Response::default()
        .add_message(msg)
+       .add_attributes(vec![
+            ("action", "freeze_account"),
+            ("token_contract", token_info.collection.as_str()),
+            ("token_id", token_info.id.as_str())
+        ])
     )
 }
 
@@ -159,7 +180,12 @@ pub fn unfreeze_account(
     });
 
     Ok(Response::default()
-       .add_message(msg)
+        .add_message(msg)
+        .add_attributes(vec![
+            ("action", "unfreeze_account"),
+            ("token_contract", token_info.collection.as_str()),
+            ("token_id", token_info.id.as_str())
+        ])
     )
 }
 
@@ -192,6 +218,12 @@ pub fn migrate_account(
     
 
     Ok(Response::default()
-       .add_message(msg)
+        .add_message(msg)
+         .add_attributes(vec![
+            ("action", "migrate_account"),
+            ("token_contract", token_info.collection.as_str()),
+            ("token_id", token_info.id.as_str()),
+            ("new_code_id", new_code_id.to_string().as_str())
+          ])
     )
 }

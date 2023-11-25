@@ -42,23 +42,12 @@ sg721-base              = "3.3.0"
 sg82-token-account      = { path = "contracts/sg82-token-account" }
 sg83-tba-registry       = { path = "contracts/sg83-tba-registry" }
 
-[profile.release.package.cw81]
-codegen-units = 1
-incremental = false
 
-[profile.release.package.cw82]
-codegen-units = 1
-incremental = false
-
-[profile.release.package.cw83]
-codegen-units = 1
-incremental = false
-
-[profile.release.package.cw82-token-account]
+[profile.release.package.sg82-token-account]
 codegen-units = 1
 incremental   = false
 
-[profile.release.package.cw83-tba-registry]
+[profile.release.package.sg83-tba-registry]
 codegen-units = 1
 incremental = false
 

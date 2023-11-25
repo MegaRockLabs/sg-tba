@@ -1,0 +1,635 @@
+{
+  "contract_name": "sg83-tba-registry",
+  "contract_version": "1.0.0",
+  "idl_version": "1.0.0",
+  "instantiate": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "InstantiateMsg",
+    "type": "object",
+    "required": [
+      "allowed_ids"
+    ],
+    "properties": {
+      "admins": {
+        "description": "List of admins who can freeze/unfreeze token-bound accounts and update allowed code ids\n\nMeant to be used by other contracts such as marketplaces and other services that hold tokens in eccrow",
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "$ref": "#/definitions/Addr"
+        }
+      },
+      "allowed_ids": {
+        "description": "List of allowed code ids that can be used to create token-bound accounts",
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        }
+      }
+    },
+    "additionalProperties": false,
+    "definitions": {
+      "Addr": {
+        "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+        "type": "string"
+      }
+    }
+  },
+  "execute": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ExecuteMsg",
+    "oneOf": [
+      {
+        "description": "Update the list of allowed code ids that can be used to create token-bound accounts or migrate them",
+        "type": "object",
+        "required": [
+          "update_allowed_ids"
+        ],
+        "properties": {
+          "update_allowed_ids": {
+            "type": "object",
+            "required": [
+              "allowed_ids"
+            ],
+            "properties": {
+              "allowed_ids": {
+                "description": "List of allowed code ids that can be used to create token-bound accounts",
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "description": "Update the owner of a token-bound account",
+        "type": "object",
+        "required": [
+          "update_account_ownership"
+        ],
+        "properties": {
+          "update_account_ownership": {
+            "type": "object",
+            "required": [
+              "new_pubkey",
+              "token_info"
+            ],
+            "properties": {
+              "new_pubkey": {
+                "description": "New public key of the account used for (cw81 signature verification)",
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/Binary"
+                  }
+                ]
+              },
+              "token_info": {
+                "description": "Non-Fungible Token Info that the existing account is linked to",
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/TokenInfo"
+                  }
+                ]
+              },
+              "update_for": {
+                "description": "Admin only parameter to update the account on behalf of another user that holds the token",
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Addr"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "description": "Create a new token-bound account. Access the old one will be forever lost",
+        "type": "object",
+        "required": [
+          "reset_account"
+        ],
+        "properties": {
+          "reset_account": {
+            "$ref": "#/definitions/CreateAccountMsg_for_CreateInitMsg"
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "description": "Migrate an account to the newer code version if the code id is allowed",
+        "type": "object",
+        "required": [
+          "migrate_account"
+        ],
+        "properties": {
+          "migrate_account": {
+            "type": "object",
+            "required": [
+              "msg",
+              "new_code_id",
+              "token_info"
+            ],
+            "properties": {
+              "msg": {
+                "description": "Migration message to be passed to the account contract",
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/Binary"
+                  }
+                ]
+              },
+              "new_code_id": {
+                "description": "New code id to migrate the account to",
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "token_info": {
+                "description": "Non-Fungible Token Info that the existing account is linked to",
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/TokenInfo"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "description": "Method called by whitelisted admins ideally only on scenarios when a token is in escrow to prevent the owner from tamperring with the assets held by the account",
+        "type": "object",
+        "required": [
+          "freeze_account"
+        ],
+        "properties": {
+          "freeze_account": {
+            "type": "object",
+            "required": [
+              "token_info"
+            ],
+            "properties": {
+              "token_info": {
+                "description": "Non-Fungible Token Info that the existing account is linked to",
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/TokenInfo"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "description": "Method called by whitelisted admins to unfreeze an account once the token is no longer in escrow",
+        "type": "object",
+        "required": [
+          "unfreeze_account"
+        ],
+        "properties": {
+          "unfreeze_account": {
+            "type": "object",
+            "required": [
+              "token_info"
+            ],
+            "properties": {
+              "token_info": {
+                "description": "Non-Fungible Token Info that the existing account is linked to",
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/TokenInfo"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "create_account"
+        ],
+        "properties": {
+          "create_account": {
+            "$ref": "#/definitions/CreateAccountMsg_for_CreateInitMsg"
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "definitions": {
+      "Addr": {
+        "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+        "type": "string"
+      },
+      "Binary": {
+        "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
+        "type": "string"
+      },
+      "CreateAccountMsg_for_CreateInitMsg": {
+        "type": "object",
+        "required": [
+          "chain_id",
+          "code_id",
+          "msg"
+        ],
+        "properties": {
+          "chain_id": {
+            "type": "string"
+          },
+          "code_id": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "msg": {
+            "$ref": "#/definitions/CreateInitMsg"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateInitMsg": {
+        "description": "An extenstion for [cw83::CreateAccountMsg]",
+        "type": "object",
+        "required": [
+          "pubkey",
+          "token_info"
+        ],
+        "properties": {
+          "pubkey": {
+            "description": "Public key of the account used for (cw81 signature verification)",
+            "allOf": [
+              {
+                "$ref": "#/definitions/Binary"
+              }
+            ]
+          },
+          "token_info": {
+            "description": "Non-Fungible Token Info that the created account will be linked to",
+            "allOf": [
+              {
+                "$ref": "#/definitions/TokenInfo"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokenInfo": {
+        "type": "object",
+        "required": [
+          "collection",
+          "id"
+        ],
+        "properties": {
+          "collection": {
+            "description": "Contract address of the token",
+            "type": "string"
+          },
+          "id": {
+            "description": "Token id",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "query": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "QueryMsg",
+    "oneOf": [
+      {
+        "description": "Query all accounts in the registry in descending order",
+        "type": "object",
+        "required": [
+          "accounts"
+        ],
+        "properties": {
+          "accounts": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "description": "Limit how many accounts to return",
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "uint32",
+                "minimum": 0.0
+              },
+              "skip": {
+                "description": "Number of accounts to skip [NOTE]: Not same as `start_after`",
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "uint32",
+                "minimum": 0.0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "description": "Query accounts linked to a token of a specific collection in descending order",
+        "type": "object",
+        "required": [
+          "collection_accounts"
+        ],
+        "properties": {
+          "collection_accounts": {
+            "type": "object",
+            "required": [
+              "collection"
+            ],
+            "properties": {
+              "collection": {
+                "description": "Contract address of the collection",
+                "type": "string"
+              },
+              "limit": {
+                "description": "Limit how many accounts to return",
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "uint32",
+                "minimum": 0.0
+              },
+              "skip": {
+                "description": "Number of accounts to skip",
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "uint32",
+                "minimum": 0.0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "description": "Query all the collections the registry is aware of",
+        "type": "object",
+        "required": [
+          "collections"
+        ],
+        "properties": {
+          "collections": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "description": "Limit how many collections to return",
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "uint32",
+                "minimum": 0.0
+              },
+              "skip": {
+                "description": "Number of collections to skip",
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "uint32",
+                "minimum": 0.0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "account_info"
+        ],
+        "properties": {
+          "account_info": {
+            "$ref": "#/definitions/AccountQuery_for_TokenInfo"
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "definitions": {
+      "AccountQuery_for_TokenInfo": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "$ref": "#/definitions/TokenInfo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokenInfo": {
+        "type": "object",
+        "required": [
+          "collection",
+          "id"
+        ],
+        "properties": {
+          "collection": {
+            "description": "Contract address of the token",
+            "type": "string"
+          },
+          "id": {
+            "description": "Token id",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "migrate": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MigrateMsg",
+    "type": "object",
+    "additionalProperties": false
+  },
+  "sudo": null,
+  "responses": {
+    "account_info": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AccountInfoResponse_for_Empty",
+      "type": "object",
+      "required": [
+        "address"
+      ],
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "info": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Empty"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Empty": {
+          "description": "An empty struct that serves as a placeholder in different places, such as contracts that don't set a custom message.\n\nIt is designed to be expressable in correct JSON and JSON Schema but contains no meaningful data. Previously we used enums without cases, but those cannot represented as valid JSON Schema (https://github.com/CosmWasm/cosmwasm/issues/451)",
+          "type": "object"
+        }
+      }
+    },
+    "accounts": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AccountsResponse",
+      "type": "object",
+      "required": [
+        "accounts",
+        "total"
+      ],
+      "properties": {
+        "accounts": {
+          "description": "List of the accounts matching the query",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Account"
+          }
+        },
+        "total": {
+          "description": "Total number of accounts in the registry",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Account": {
+          "description": "An full account stored in the registry",
+          "type": "object",
+          "required": [
+            "address",
+            "collection",
+            "id"
+          ],
+          "properties": {
+            "address": {
+              "description": "Address of the token-bound account",
+              "type": "string"
+            },
+            "collection": {
+              "description": "Contract address of the collection",
+              "type": "string"
+            },
+            "id": {
+              "description": "Token id",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "collection_accounts": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CollectionAccountsResponse",
+      "type": "object",
+      "required": [
+        "accounts",
+        "total"
+      ],
+      "properties": {
+        "accounts": {
+          "description": "List of the accounts matching the query",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CollectionAccount"
+          }
+        },
+        "total": {
+          "description": "Total number of accounts of a specific collection",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "CollectionAccount": {
+          "description": "An entry without collection address",
+          "type": "object",
+          "required": [
+            "address",
+            "id"
+          ],
+          "properties": {
+            "address": {
+              "description": "Address of the token-bound account",
+              "type": "string"
+            },
+            "id": {
+              "description": "Token id",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "collections": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CollectionsResponse",
+      "description": "A List of the collections registered in the registry",
+      "type": "object",
+      "required": [
+        "collections"
+      ],
+      "properties": {
+        "collections": {
+          "description": "Contract addresses of each collections",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

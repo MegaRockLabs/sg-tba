@@ -62,11 +62,11 @@ fn test_mint_token(chain: &mut Chain) {
     ).unwrap();
 
     let tags = init_res
-                        .res
-                        .find_event_tags(
-                            "instantiate".to_string(), 
-                            "_contract_address".to_string()
-                        );
+                .res
+                .find_event_tags(
+                    "instantiate".to_string(), 
+                    "_contract_address".to_string()
+                );
 
     let col_address = tags[0].value.clone();
     

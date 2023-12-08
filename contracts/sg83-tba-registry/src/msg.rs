@@ -5,6 +5,7 @@ use cw83::{registy_execute, registy_query,
     AccountQuery as AccountQueryBase,
     AccountInfoResponse as AccountInfoResponseBase,
 };
+use sg82_token_account::msg::TokenInfo;
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -17,15 +18,6 @@ pub struct InstantiateMsg {
 
     /// List of allowed code ids that can be used to create token-bound accounts
     pub allowed_ids: Vec<u64>,
-}
-
-#[cw_serde]
-pub struct TokenInfo {
-    /// Contract address of the token
-    pub collection: String,
-
-    /// Token id
-    pub id: String,
 }
 
 

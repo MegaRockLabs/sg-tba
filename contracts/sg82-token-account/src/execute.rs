@@ -3,7 +3,14 @@ use cosmwasm_std::{
 };
 
 use cw_ownable::{assert_owner, initialize_owner, is_owner};
-use crate::{error::ContractError, utils::{assert_factory, is_ok_cosmos_msg, assert_status}, state::{KNOWN_TOKENS, PUBKEY, STATUS, MINT_CACHE}, msg::Status, contract::MINT_REPLY_ID};
+use crate::{
+    error::ContractError, 
+    utils::{is_ok_cosmos_msg, assert_status, assert_registry, verify_nft_ownership}, 
+    state::{KNOWN_TOKENS, PUBKEY, STATUS, MINT_CACHE, TOKEN_INFO}, 
+    msg::Status, 
+};
+
+pub const MINT_REPLY_ID: u64 = 1;
 
 
 pub fn try_execute(
@@ -49,20 +56,50 @@ pub fn try_freeze(
     deps: DepsMut,
     sender: Addr
 ) -> Result<Response, ContractError> {
-    assert_factory(deps.as_ref(), sender)?;
+    let token = TOKEN_INFO.load(deps.storage)?;
+    let owner = cw_ownable::get_ownership(deps.storage)?.owner.unwrap();
+
+    if owner != sender {
+
+        // check if current owner still holds the token
+        let verification = verify_nft_ownership(
+            &deps.querier, 
+            owner.as_str(), 
+            token
+        );
+
+        if verification.is_ok() {
+            // the token is not in escrow it isn't freezable by other entities
+            return  Err(ContractError::Unauthorized {});
+        }
+    }
+
     STATUS.save(deps.storage, &Status { frozen: true })?;
-    Ok(Response::default())
+
+    Ok(Response::default()
+        .add_attribute("action", "freeze"
+    ))
 }
 
 
 pub fn try_unfreeze(
     deps: DepsMut,
-    sender: Addr,
 ) -> Result<Response, ContractError> {
-    assert_factory(deps.as_ref(), sender)?;
-    STATUS.save(deps.storage, &Status { frozen: false })?;
-    Ok(Response::default())
+
+    let owner = cw_ownable::get_ownership(deps.storage)?.owner.unwrap();
+    let token = TOKEN_INFO.load(deps.storage)?;
+    
+    verify_nft_ownership(
+        &deps.querier, 
+        owner.as_str(), 
+        token
+    )?;
+    
+    Ok(Response::default()
+        .add_attribute("action", "unfreeze"
+    ))
 }
+
 
 pub fn try_update_ownership(
     deps: DepsMut,
@@ -70,11 +107,15 @@ pub fn try_update_ownership(
     new_owner: String,
     new_pubkey: Binary
 ) -> Result<Response, ContractError> {
-    assert_factory(deps.as_ref(), sender)?;
+    assert_registry(deps.storage, &sender)?;
     initialize_owner(deps.storage, deps.api, Some(&new_owner))?;
     STATUS.save(deps.storage, &Status { frozen: false })?;
     PUBKEY.save(deps.storage, &new_pubkey)?;
-    Ok(Response::default())
+    Ok(
+        Response::default()
+            .add_attribute("action", "update_ownership")
+            .add_attribute("new_owner", new_owner.as_str())
+    )
 }
 
 
@@ -95,10 +136,11 @@ pub fn try_change_pubkey(
 }
 
 
+
 pub fn try_forget_tokens(
     deps: DepsMut,
     sender: Addr, 
-    contract_addr: String,
+    collection: String,
     token_ids: Vec<String>
 ) -> Result<Response, ContractError> {
     assert_owner(deps.storage, &sender)?;
@@ -106,24 +148,24 @@ pub fn try_forget_tokens(
 
     let ids = if token_ids.len() == 0 {
         KNOWN_TOKENS
-        .prefix(contract_addr.as_str())
+        .prefix(collection.as_str())
         .keys(deps.storage, None, None, cosmwasm_std::Order::Ascending)
         .collect::<StdResult<Vec<String>>>()?
 
     } else {
         token_ids
     };
-    
 
     for id in ids {
         KNOWN_TOKENS.remove(
             deps.storage, 
-            (contract_addr.as_str(), id.as_str()), 
+            (collection.as_str(), id.as_str()), 
         );
     }
 
     Ok(Response::new().add_attribute("action", "forget_tokens"))
 }
+
 
 
 pub fn try_update_known_tokens(
@@ -160,6 +202,7 @@ pub fn try_update_known_tokens(
 }
 
 
+
 pub fn try_update_known_on_receive(
     deps: DepsMut,
     collection: String,
@@ -172,7 +215,10 @@ pub fn try_update_known_on_receive(
         &true
     )?;
 
-    Ok(Response::default())
+    Ok(
+        Response::default()
+            .add_attribute("action", "update_known_on_receive")
+    )
 }
 
 

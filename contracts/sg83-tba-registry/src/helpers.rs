@@ -1,8 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Deps, to_binary, Binary, Addr, Coin, StdResult, CosmosMsg, SubMsg, ReplyOn};
 use cw83::{Cw83RegistryBase, CREATE_ACCOUNT_REPLY_ID};
-
-use crate::{error::ContractError, msg::TokenInfo};
+use sg82_token_account::msg::TokenInfo;
 
 
 pub fn construct_label(
@@ -10,31 +9,6 @@ pub fn construct_label(
 ) -> String {
     format!("{}-{}-account", info.collection, info.id)
 }
-
-
-pub fn verify_nft_ownership(
-    deps: Deps,
-    sender: &str,
-    token_info: TokenInfo
-) -> Result<(), ContractError> {
-
-    let owner_res = deps
-        .querier
-        .query_wasm_smart::<cw721::OwnerOfResponse>(
-            token_info.collection, 
-        &sg721_base::QueryMsg::OwnerOf {
-            token_id: token_info.id,
-            include_expired: None
-        }
-    )?;
-
-    if owner_res.owner.as_str() != sender {
-        return Err(ContractError::Unauthorized {});
-    }
-
-    Ok(())
-}
-
 
 
 #[cw_serde]

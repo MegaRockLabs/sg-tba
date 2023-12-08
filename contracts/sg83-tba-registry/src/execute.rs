@@ -2,11 +2,12 @@ use std::vec;
 
 use cosmwasm_std::{Response, Env, Binary, DepsMut, Coin, SubMsg, ReplyOn, WasmMsg, to_binary, CosmosMsg, Addr};
 use cw83::CREATE_ACCOUNT_REPLY_ID;
+use sg82_token_account::{msg::TokenInfo, utils::verify_nft_ownership};
 
 use crate::{
     state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, ADMINS, ALLOWED_IDS},
-    helpers::{verify_nft_ownership, construct_label}, 
-    error::ContractError, msg::TokenInfo
+    helpers::construct_label, 
+    error::ContractError
 };
 
 pub fn create_account(
@@ -29,7 +30,7 @@ pub fn create_account(
         return Err(ContractError::InvalidCodeId {})
     }
 
-    verify_nft_ownership(deps.as_ref(), &sender, token_info.clone())?;
+    sg82_token_account::utils::verify_nft_ownership(&deps.querier, &sender, token_info.clone())?;
 
     if !reset && TOKEN_ADDRESSES.has(
         deps.storage, 
@@ -86,7 +87,7 @@ pub fn update_account_owner(
     let is_admin = ADMINS.load(deps.storage)?.is_admin(sender.as_ref());
     let owner = update_for.unwrap_or(sender.clone());
 
-    verify_nft_ownership(deps.as_ref(), owner.as_str(), token_info.clone())?;
+    verify_nft_ownership(&deps.querier, owner.as_str(), token_info.clone())?;
 
     let contract_addr = TOKEN_ADDRESSES.load(
         deps.storage, 
@@ -161,7 +162,7 @@ pub fn unfreeze_account(
 ) -> Result<Response, ContractError> {
 
     let is_admin = ADMINS.load(deps.storage)?.is_admin(sender.as_ref());
-    let is_owner = verify_nft_ownership(deps.as_ref(), sender.as_str(), token_info.clone()).is_ok();
+    let is_owner = verify_nft_ownership(&deps.querier, sender.as_str(), token_info.clone()).is_ok();
 
     if !is_admin && !is_owner {
         return Err(ContractError::Unauthorized {})
@@ -204,7 +205,7 @@ pub fn migrate_account(
         return Err(ContractError::InvalidCodeId {});
     }
 
-    verify_nft_ownership(deps.as_ref(), sender.as_str(), token_info.clone())?;
+    verify_nft_ownership(&deps.querier, sender.as_str(), token_info.clone())?;
 
     let contract_addr = TOKEN_ADDRESSES.load(
         deps.storage, 

@@ -28,9 +28,9 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub struct TokenInfo {
     /// Contract address of the collection
-    pub token_contract: String,
+    pub collection: String,
     /// Token id
-    pub token_id: String
+    pub id: String
 }
 
 

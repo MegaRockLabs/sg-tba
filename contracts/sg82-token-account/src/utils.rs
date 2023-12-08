@@ -1,5 +1,5 @@
-use cosmwasm_std::{Addr, Deps, StdResult, Binary, StdError, from_binary, CosmosMsg, WasmMsg, Storage};
-use crate::{msg::PayloadInfo, error::ContractError, state::STATUS};
+use cosmwasm_std::{Addr, StdResult, Binary, StdError, from_binary, CosmosMsg, WasmMsg, Storage, QuerierWrapper};
+use crate::{msg::{PayloadInfo, TokenInfo}, error::ContractError, state::{STATUS, REGISTRY_ADDRESS}};
 
 pub fn assert_status(
     store: &dyn Storage
@@ -46,23 +46,35 @@ pub fn is_ok_cosmos_msg(
 }
 
 
-pub fn assert_factory(
-    deps: Deps,
+#[cfg(target_arch = "wasm32")]
+pub fn query_if_registry(
+    querier: &QuerierWrapper,
     addr: Addr
+) -> StdResult<bool> {
+    cw83::Cw83RegistryBase(addr).supports_interface(querier)
+}
+
+
+
+pub fn assert_registry(
+    store: &dyn Storage,
+    addr: &Addr
 ) -> Result<(), ContractError> {
-    if is_factory(deps, addr)? {
+    if is_registry(store, addr)? {
         Ok(())
     } else {
         Err(ContractError::Unauthorized {})
     }
 }
 
-pub fn is_factory(
-    deps: Deps,
-    addr: Addr
+
+pub fn is_registry(
+    store: &dyn Storage,
+    addr: &Addr
 ) -> StdResult<bool> {
-    cw83::Cw83RegistryBase(addr).supports_interface(deps)
+    REGISTRY_ADDRESS.load(store).map(|a| a == addr.to_string())
 }
+
 
 pub fn parse_payload(
     payload: &Option<Binary>
@@ -91,4 +103,27 @@ pub fn generate_amino_transaction_string(signer: &str, data: &str) -> String {
         "{{\"account_number\":\"0\",\"chain_id\":\"\",\"fee\":{{\"amount\":[],\"gas\":\"0\"}},\"memo\":\"\",\"msgs\":[{{\"type\":\"sign/MsgSignData\",\"value\":{{\"data\":\"{}\",\"signer\":\"{}\"}}}}],\"sequence\":\"0\"}}", 
         data, signer
     )
+}
+
+
+pub fn verify_nft_ownership(
+    querier: &QuerierWrapper,
+    sender: &str,
+    token_info: TokenInfo
+) -> StdResult<()> {
+
+    let owner_res = querier
+            .query_wasm_smart::<cw721::OwnerOfResponse>(
+                token_info.collection, 
+            &sg721_base::QueryMsg::OwnerOf {
+                token_id: token_info.id,
+                include_expired: None
+            }
+    )?;
+
+    if owner_res.owner.as_str() != sender {
+        return Err(StdError::GenericErr { msg: ContractError::Unauthorized {}.to_string() });
+    }
+
+    Ok(())
 }

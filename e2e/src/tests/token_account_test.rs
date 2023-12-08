@@ -138,7 +138,7 @@ fn general_queries(chain: &mut Chain) {
     ).unwrap();
 
     assert_eq!(info, TokenInfo {
-        token_contract: data.collection,
+        collection: data.collection,
         token_id: data.token_id
     });
 
@@ -285,7 +285,7 @@ fn know_tokens_on_recieve(chain: &mut Chain) {
 
     let first = tokens.first().unwrap().clone();
 
-    assert_eq!(first, TokenInfo { token_contract: data.collection, token_id: token_id })
+    assert_eq!(first, TokenInfo { collection: data.collection, token_id: token_id })
 }
 
 

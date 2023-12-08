@@ -145,7 +145,7 @@ pub fn known_tokens(
     .take(limit)
     .map(|(_, kt)| {
         let kp = kt?;
-        Ok(TokenInfo { token_contract: kp.0, token_id: kp.1 })
+        Ok(TokenInfo { collection: kp.0, id: kp.1 })
     })
     .collect();
 

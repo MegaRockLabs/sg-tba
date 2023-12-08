@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Addr;
 use cw_storage_plus::{Map, Item};
-use crate::msg::TokenInfo;
+use sg82_token_account::msg::TokenInfo;
 
 
 #[cw_serde]

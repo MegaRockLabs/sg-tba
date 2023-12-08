@@ -1,6 +1,17 @@
 use cosmwasm_std::{StdResult, Deps, Order};
+use sg82_token_account::msg::TokenInfo;
 
-use crate::{state::{TOKEN_ADDRESSES, COL_TOKEN_COUNTS}, msg::{AccountInfoResponse, TokenInfo, CollectionAccount, CollectionAccountsResponse, CollectionsResponse, AccountsResponse, Account}};
+use crate::{
+    state::{TOKEN_ADDRESSES, COL_TOKEN_COUNTS}, 
+    msg::{
+        AccountInfoResponse,  
+        CollectionAccount, 
+        CollectionAccountsResponse, 
+        CollectionsResponse, 
+        AccountsResponse, 
+        Account
+    }
+};
 
 const DEFAULT_BATCH_SIZE : u32 = 100;
 

@@ -5,7 +5,7 @@ use cw_ownable::is_owner;
 
 use crate::{
     state::{PUBKEY, KNOWN_TOKENS, TOKEN_INFO, STATUS, REGISTRY_ADDRESS}, 
-    utils::{generate_amino_transaction_string, parse_payload, is_ok_cosmos_msg, status_ok}, 
+    utils::{generate_amino_transaction_string, parse_payload, is_ok_cosmos_msg, status_ok, assert_status}, 
     msg::{AssetsResponse, TokenInfo, FullInfoResponse}
 };
 
@@ -39,16 +39,21 @@ pub fn valid_signature(
     signature: Binary,
     payload: &Option<Binary>
 ) -> StdResult<ValidSignatureResponse> {
+
     let pk: Binary = PUBKEY.load(deps.storage)?;
     let payload = parse_payload(payload)?;
+
     Ok(ValidSignatureResponse {
-        is_valid: verify_arbitrary(
-            deps,
-            &payload.account,
-            data,
-            signature,
-            &pk
-        ).unwrap_or(false)
+        is_valid: match assert_status(deps.storage)? {
+            true => verify_arbitrary(
+                deps,
+                &payload.account,
+                data,
+                signature,
+                &pk
+            )?,
+            false => false
+        }
     })
 }
 
@@ -59,6 +64,9 @@ pub fn valid_signatures(
     signatures: Vec<Binary>,
     payload: &Option<Binary>
 ) -> StdResult<ValidSignaturesResponse> {
+
+    let status_ok = assert_status(deps.storage)?;
+
     let pk: Binary = PUBKEY.load(deps.storage)?;
     let payload = parse_payload(payload)?;
 
@@ -66,6 +74,7 @@ pub fn valid_signatures(
         .into_iter()
         .enumerate()
         .map(|(i, signature)| {
+            if !status_ok { return false };
             let data = data.get(i).unwrap().clone();
             verify_arbitrary(
                 deps,
@@ -74,9 +83,9 @@ pub fn valid_signatures(
                 signature,
                 &pk
             ).unwrap_or(false)
-
         })
         .collect(); 
+    
     Ok(ValidSignaturesResponse {
         are_valid
     })

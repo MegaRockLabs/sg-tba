@@ -5,7 +5,7 @@ use cw83::{registy_execute, registy_query,
     AccountQuery as AccountQueryBase,
     AccountInfoResponse as AccountInfoResponseBase,
 };
-use sg82_token_account::msg::TokenInfo;
+pub use sg82_token_account::msg::TokenInfo;
 
 #[cw_serde]
 pub struct InstantiateMsg {

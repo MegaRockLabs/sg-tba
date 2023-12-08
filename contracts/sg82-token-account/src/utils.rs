@@ -4,7 +4,7 @@ use crate::{msg::{PayloadInfo, TokenInfo}, error::ContractError, state::{STATUS,
 pub fn assert_status(
     store: &dyn Storage
 ) -> StdResult<bool>{
-    let status =STATUS.load(store)?;
+    let status = STATUS.load(store)?;
     Ok(!status.frozen)
 }   
 
@@ -82,15 +82,15 @@ pub fn parse_payload(
 
     if payload.is_none() {
         return Err(StdError::GenericErr { 
-            msg: "Invalid payload. Must have an 'account' address and 'algo' must be 'amino_direct'".into() 
+            msg: "Invalid payload. Must have an 'account' address and 'algo' must be 'amino_arbitrary'".into() 
         })
     }
 
     let payload : PayloadInfo = from_binary(payload.as_ref().unwrap())?;
     
-    if payload.account.len() < 1 || payload.algo != "amino_direct" {
+    if payload.account.len() < 1 || payload.algo != "amino_arbitrary" {
         return Err(StdError::GenericErr { 
-            msg: "Invalid payload. Must have an 'account' address and 'amino_direct' must be 'amino'".into() 
+            msg: "Invalid payload. Must have an 'account' address and 'amino_arbitrary' must be 'amino'".into() 
         })
     }
 

@@ -126,8 +126,6 @@ fn general_queries(chain: &mut Chain) {
     assert_eq!(ownership.owner, Some(data.user_address));
 
 
-
-
     let res = wasm_query(
         chain, 
         &data.token_account, 
@@ -139,7 +137,7 @@ fn general_queries(chain: &mut Chain) {
 
     assert_eq!(info, TokenInfo {
         collection: data.collection,
-        token_id: data.token_id
+        id: data.token_id
     });
 
 
@@ -285,7 +283,7 @@ fn know_tokens_on_recieve(chain: &mut Chain) {
 
     let first = tokens.first().unwrap().clone();
 
-    assert_eq!(first, TokenInfo { collection: data.collection, token_id: token_id })
+    assert_eq!(first, TokenInfo { collection: data.collection, id: token_id })
 }
 
 
@@ -467,7 +465,7 @@ fn tokens_acknowlegement(chain: &mut Chain) {
         &QueryMsg::KnownTokens { skip: None, limit: None }
     ).unwrap();
     assert_eq!(tokens.len(), 3);
-    assert_eq!(tokens.first().unwrap().token_id, "4".to_string());
+    assert_eq!(tokens.first().unwrap().id, "4".to_string());
 
 
 
@@ -478,7 +476,7 @@ fn tokens_acknowlegement(chain: &mut Chain) {
         &QueryMsg::KnownTokens { skip: None, limit: None }
     ).unwrap();
     assert_eq!(tokens.len(), 1);
-    assert_eq!(tokens.first().unwrap().token_id, "3".to_string());
+    assert_eq!(tokens.first().unwrap().id, "3".to_string());
 
 
     // ----------------------------------------------------
@@ -634,7 +632,5 @@ fn direct_mint(chain: &mut Chain) {
         }
     ).unwrap();
     assert_eq!(res.tokens.len(), 1);
-
-
     
 }

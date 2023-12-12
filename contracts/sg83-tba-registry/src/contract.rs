@@ -15,7 +15,7 @@ use crate::{
     error::ContractError, 
 };
 
-pub const CONTRACT_NAME: &str = "crates:cw83-tba-registry";
+pub const CONTRACT_NAME: &str = "crates:sg83-tba-registry";
 pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 

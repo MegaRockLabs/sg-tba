@@ -870,7 +870,7 @@ checksum = "545b22097d44f8a9581187cdf93de7a71e4722bf51200cfaba810865b49a495d"
 
 [[package]]
 name = "e2e"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "assert_matches",
  "async-trait",
@@ -2353,7 +2353,7 @@ dependencies = [
 
 [[package]]
 name = "sg82-token-account"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -2374,7 +2374,7 @@ dependencies = [
 
 [[package]]
 name = "sg83-tba-registry"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",

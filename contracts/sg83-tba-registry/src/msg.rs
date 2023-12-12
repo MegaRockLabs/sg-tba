@@ -152,19 +152,6 @@ pub enum ExecuteMsg {
         new_code_id: u64,
         /// Migration message to be passed to the account contract
         msg: sg82_token_account::msg::MigrateMsg
-    },
-
-    /// Method called by whitelisted admins ideally only on scenarios when a token is in escrow
-    /// to prevent the owner from tamperring with the assets held by the account
-    FreezeAccount {
-        /// Non-Fungible Token Info that the existing account is linked to
-        token_info: TokenInfo
-    },
-
-    /// Method called by whitelisted admins to unfreeze an account once the token is no longer in escrow
-    UnfreezeAccount {
-        /// Non-Fungible Token Info that the existing account is linked to
-        token_info: TokenInfo
-    },
+    }
 
 }

@@ -69,7 +69,6 @@ fn test_queries(chain: &mut Chain) {
 
     assert_eq!(info.address, data.token_account);
     assert_eq!(info.address, first_account.address);
-
     
     let res = wasm_query(
         chain, 
@@ -87,8 +86,6 @@ fn test_queries(chain: &mut Chain) {
     assert_eq!(res.collections.len(), 1);
     let first = res.collections[0].clone();
     assert_eq!(first, data.collection);
-
-
 }
 
 
@@ -107,7 +104,6 @@ fn test_reset_migrate(chain: &mut Chain) {
         data.token_id.clone(), 
         &key
     ).is_ok());
-
 
     assert!(reset_token_account(
         chain, 

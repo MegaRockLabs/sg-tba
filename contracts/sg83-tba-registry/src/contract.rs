@@ -10,7 +10,9 @@ use cw83::CREATE_ACCOUNT_REPLY_ID;
 use crate::{
     state::{LAST_ATTEMPTING, ALLOWED_IDS, TOKEN_ADDRESSES, ADMINS, AdminList, COL_TOKEN_COUNTS},
     msg::{InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg}, 
-    error::ContractError, execute::{create_account, update_account_owner, freeze_account, unfreeze_account, migrate_account}, query::{account_info, accounts, collections, collection_accounts}, 
+    execute::{create_account, update_account_owner, migrate_account}, 
+    query::{account_info, accounts, collections, collection_accounts}, 
+    error::ContractError, 
 };
 
 pub const CONTRACT_NAME: &str = "crates:cw83-tba-registry";
@@ -108,11 +110,7 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
             new_pubkey, 
             info.funds,
             update_for
-        ),
-
-        ExecuteMsg::FreezeAccount { token_info } => freeze_account(deps, info.sender, token_info),
-        
-        ExecuteMsg::UnfreezeAccount { token_info } => unfreeze_account(deps, info.sender, token_info),
+        )
     }
 }
 

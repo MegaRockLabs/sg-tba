@@ -20,6 +20,9 @@ pub enum ContractError {
     #[error("Not Supported")]
     NotSupported {},
 
+    #[error("Deleted")]
+    Deleted {},
+
     #[error("Semver parsing error: {0}")]
     SemVer(String),
 }

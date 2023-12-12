@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    to_binary, DepsMut, Deps, Env, MessageInfo, Response, Reply, StdResult, Binary
+    to_json_binary, DepsMut, Deps, Env, MessageInfo, Response, Reply, StdResult, Binary
 };
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
@@ -127,7 +127,7 @@ pub fn reply(deps: DepsMut, _ : Env, msg : Reply)
         let addr = res.contract_address;
         let ver_addr = deps.api.addr_validate(addr.as_str())?;
 
-        Cw82Contract(ver_addr).supports_interface(deps.as_ref())?;
+        Cw82Contract(ver_addr).supports_interface(&deps.querier)?;
         
         let stored = LAST_ATTEMPTING.load(deps.storage)?;
         LAST_ATTEMPTING.remove(deps.storage);
@@ -164,17 +164,17 @@ pub fn query(deps: Deps, _ : Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::AccountInfo(
             acc_query
-        ) => to_binary(&account_info(deps, acc_query.query)?),
+        ) => to_json_binary(&account_info(deps, acc_query.query)?),
 
         QueryMsg::Collections {
             skip,
             limit
-        } => to_binary(&collections(deps, skip, limit)?),
+        } => to_json_binary(&collections(deps, skip, limit)?),
 
         QueryMsg::Accounts { 
             skip, 
             limit 
-        } => to_binary(&accounts(
+        } => to_json_binary(&accounts(
             deps, 
             skip,
             limit
@@ -184,7 +184,7 @@ pub fn query(deps: Deps, _ : Env, msg: QueryMsg) -> StdResult<Binary> {
             collection, 
             skip, 
             limit 
-        } => to_binary(&collection_accounts(
+        } => to_json_binary(&collection_accounts(
             deps, 
             &collection,
             skip,

@@ -202,10 +202,11 @@ pub enum ExecuteMsg {
 
     /// Registry only method to call after the token is released from escrow
     Unfreeze {},
+
+    /// Remove all the data from the contract and make it unsuable
+    Purge {}
 }
 
 
 #[cw_serde]
-pub struct MigrateMsg<T> {
-    pub params: Option<Box<T>>
-}
+pub struct MigrateMsg {}

@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, StdResult, Binary, StdError, from_binary, CosmosMsg, WasmMsg, Storage, QuerierWrapper};
+use cosmwasm_std::{Addr, StdResult, Binary, StdError, CosmosMsg, WasmMsg, Storage, QuerierWrapper, from_json};
 use crate::{msg::{PayloadInfo, TokenInfo}, error::ContractError, state::{STATUS, REGISTRY_ADDRESS}};
 
 pub fn assert_status(
@@ -46,7 +46,6 @@ pub fn is_ok_cosmos_msg(
 }
 
 
-#[cfg(target_arch = "wasm32")]
 pub fn query_if_registry(
     querier: &QuerierWrapper,
     addr: Addr
@@ -86,7 +85,7 @@ pub fn parse_payload(
         })
     }
 
-    let payload : PayloadInfo = from_binary(payload.as_ref().unwrap())?;
+    let payload : PayloadInfo = from_json(payload.as_ref().unwrap())?;
     
     if payload.account.len() < 1 || payload.algo != "amino_arbitrary" {
         return Err(StdError::GenericErr { 

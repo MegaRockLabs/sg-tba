@@ -7,14 +7,14 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version    = "1.0.0"
+version    = "1.0.1"
 edition    = "2021"
 repository = "https://github.com/MegaRockLabs/cw-extra"
 
 
 [workspace.dependencies]
-cosmwasm-schema = "1.4.1"
 cosmwasm-std = { version = "1.4.1", default-features = false }
+cosmwasm-schema = "1.4.1"
 cw-storage-plus = "1.1.0"
 
 k256                 = { version = "0.13.1", default-features = false, features = ["ecdsa"] }

@@ -1,8 +1,22 @@
-use std::vec;
+use cosmwasm_std::{
+    Response, 
+    Env, 
+    Binary, 
+    DepsMut, 
+    Coin, 
+    SubMsg, 
+    ReplyOn, 
+    WasmMsg, 
+    CosmosMsg, 
+    Addr,
+    to_json_binary, 
+};
 
-use cosmwasm_std::{Response, Env, Binary, DepsMut, Coin, SubMsg, ReplyOn, WasmMsg, to_binary, CosmosMsg, Addr};
 use cw83::CREATE_ACCOUNT_REPLY_ID;
-use sg82_token_account::{msg::TokenInfo, utils::verify_nft_ownership};
+use sg82_token_account::{
+    msg::{TokenInfo, MigrateMsg}, 
+    utils::verify_nft_ownership
+};
 
 use crate::{
     state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, ADMINS, ALLOWED_IDS},
@@ -30,13 +44,36 @@ pub fn create_account(
         return Err(ContractError::InvalidCodeId {})
     }
 
-    sg82_token_account::utils::verify_nft_ownership(&deps.querier, &sender, token_info.clone())?;
+    verify_nft_ownership(&deps.querier, &sender, token_info.clone())?;
 
-    if !reset && TOKEN_ADDRESSES.has(
+
+    let mut res = Response::default()
+        .add_attributes(vec![
+            ("action",  if reset { "reset_account" } else { "create_account" }),
+            ("token_contract", token_info.collection.as_str()),
+            ("token_id", token_info.id.as_str()),
+            ("code_id", code_id.to_string().as_str()),
+            ("chain_id", chain_id.as_str()),
+            ("owner", sender.as_str())
+        ]); 
+
+    
+    let token_address = TOKEN_ADDRESSES.may_load(
         deps.storage, 
         (token_info.collection.as_str(), token_info.id.as_str())
-    ) {
-        return Err(ContractError::AccountExists {})
+    )?;
+
+    if token_address.is_some() {
+
+        if !reset {
+            return Err(ContractError::AccountExists {})
+        }
+
+        res = res.add_message(WasmMsg::Execute {
+            contract_addr: token_address.unwrap(),
+            msg: to_json_binary(&sg82_token_account::msg::ExecuteMsg::Purge {})?,
+            funds: vec![]
+        });
     }
 
     LAST_ATTEMPTING.save(deps.storage, &token_info)?;
@@ -48,14 +85,14 @@ pub fn create_account(
         pubkey
     };
 
-    Ok(Response::default()
+    Ok(res
        .add_submessage(SubMsg {
             id: CREATE_ACCOUNT_REPLY_ID,
             msg: cosmwasm_std::CosmosMsg::Wasm(
                 WasmMsg::Instantiate { 
                     admin: Some(env.contract.address.to_string()), 
                     code_id, 
-                    msg: to_binary(&init_msg)?, 
+                    msg: to_json_binary(&init_msg)?, 
                     funds, 
                     label: construct_label(&token_info) 
                 }
@@ -63,14 +100,7 @@ pub fn create_account(
             reply_on: ReplyOn::Success,
             gas_limit: None
         })
-        .add_attributes(vec![
-            ("action",  if reset { "reset_account" } else { "create_account" }),
-            ("token_contract", token_info.collection.as_str()),
-            ("token_id", token_info.id.as_str()),
-            ("code_id", code_id.to_string().as_str()),
-            ("chain_id", chain_id.as_str()),
-            ("owner", sender.as_str())
-        ])
+        
     )
 }
 
@@ -105,7 +135,7 @@ pub fn update_account_owner(
 
     let msg = CosmosMsg::Wasm(WasmMsg::Execute { 
         contract_addr, 
-        msg: to_binary(&msg)?, 
+        msg: to_json_binary(&msg)?, 
         funds 
     });
 
@@ -140,7 +170,7 @@ pub fn freeze_account(
 
     let msg = CosmosMsg::Wasm(WasmMsg::Execute { 
         contract_addr, 
-        msg: to_binary(&msg)?, 
+        msg: to_json_binary(&msg)?, 
         funds: vec![]
     });
 
@@ -177,7 +207,7 @@ pub fn unfreeze_account(
 
     let msg = CosmosMsg::Wasm(WasmMsg::Execute { 
         contract_addr, 
-        msg: to_binary(&msg)?, 
+        msg: to_json_binary(&msg)?, 
         funds: vec![]
     });
 
@@ -198,7 +228,7 @@ pub fn migrate_account(
     sender: Addr,
     token_info: TokenInfo,
     new_code_id: u64,
-    msg: Binary
+    msg: MigrateMsg
 ) -> Result<Response, ContractError> {
 
     if !ALLOWED_IDS.load(deps.storage)?.contains(&new_code_id) {
@@ -212,11 +242,10 @@ pub fn migrate_account(
         (token_info.collection.as_str(), token_info.id.as_str())
     )?;
 
-
     let msg = CosmosMsg::Wasm(WasmMsg::Migrate { 
         contract_addr, 
         new_code_id, 
-        msg 
+        msg: to_json_binary(&msg)?
     });
     
 

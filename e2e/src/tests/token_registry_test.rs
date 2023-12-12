@@ -1,10 +1,10 @@
-use cosmwasm_std::from_binary;
+use cosmwasm_std::from_json;
 use test_context::test_context;
 use sg83_tba_registry::msg::{self as RegistryMsg, TokenInfo};
 use RegistryMsg::QueryMsg as RegistryQuery;
 
 use crate::helpers::{
-    chain::Chain, helper::{full_setup, wasm_query},
+    chain::Chain, helper::{full_setup, wasm_query, migrate_token_account, reset_token_account},
 };
 
 
@@ -19,8 +19,8 @@ fn test_queries(chain: &mut Chain) {
         limit: None
     }).unwrap();
 
-    let acc_res = from_binary::<RegistryMsg::AccountsResponse>(
-        &res.res.data.unwrap().into()
+    let acc_res = from_json::<RegistryMsg::AccountsResponse>(
+        &res.res.data.unwrap()
     ).unwrap();
 
 
@@ -33,8 +33,8 @@ fn test_queries(chain: &mut Chain) {
             limit: None 
         }
     );
-    let col_res = from_binary::<RegistryMsg::CollectionAccountsResponse>(
-        &res.unwrap().res.data.unwrap().into()
+    let col_res = from_json::<RegistryMsg::CollectionAccountsResponse>(
+        &res.unwrap().res.data.unwrap()
     ).unwrap();
 
 
@@ -63,8 +63,8 @@ fn test_queries(chain: &mut Chain) {
         )
     ).unwrap();
 
-    let info = from_binary::<RegistryMsg::AccountInfoResponse>(
-        &res.res.data.unwrap().into()
+    let info = from_json::<RegistryMsg::AccountInfoResponse>(
+        &res.res.data.unwrap()
     ).unwrap();
 
     assert_eq!(info.address, data.token_account);
@@ -80,13 +80,41 @@ fn test_queries(chain: &mut Chain) {
         }
     );
 
-    let res = from_binary::<RegistryMsg::CollectionsResponse>(
-        &res.unwrap().res.data.unwrap().into()
+    let res = from_json::<RegistryMsg::CollectionsResponse>(
+        &res.unwrap().res.data.unwrap()
     ).unwrap();
 
     assert_eq!(res.collections.len(), 1);
     let first = res.collections[0].clone();
     assert_eq!(first, data.collection);
 
+
+}
+
+
+
+#[test_context(Chain)]
+#[test]
+#[ignore]
+fn test_reset_migrate(chain: &mut Chain) {
+    let data = full_setup(chain).unwrap();
+
+    let key = chain.cfg.users[0].clone().key;
+
+    assert!(migrate_token_account(
+        chain, 
+        data.collection.clone(), 
+        data.token_id.clone(), 
+        &key
+    ).is_ok());
+
+
+    assert!(reset_token_account(
+        chain, 
+        data.collection.clone(), 
+        data.token_id.clone(), 
+        data.public_key,
+        &key
+    ).is_ok());
 
 }

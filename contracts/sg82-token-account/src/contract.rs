@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, to_binary, Empty, Reply,
+    Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Reply, StdError, to_json_binary,
 };
 use cw_ownable::{get_ownership, initialize_owner};
 
@@ -23,12 +23,13 @@ use crate::{
         try_unfreeze, 
         try_change_pubkey, 
         try_mint_token, 
+        try_purging,
         MINT_REPLY_ID
     }, 
 };
 
 #[cfg(target_arch = "wasm32")]
-use crate::utils::is_factory;
+use crate::utils::query_if_registry;
 
 pub const CONTRACT_NAME: &str = "crates:cw82-token-account";
 pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -58,7 +59,7 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
     )?;
 
     #[cfg(target_arch = "wasm32")]
-    if !is_factory(deps.as_ref(), info.sender.clone())? {
+    if !query_if_registry(&deps.querier, info.sender.clone())? {
         return Err(ContractError::Unauthorized {})
     };
 
@@ -82,6 +83,11 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg) 
 -> Result<Response, ContractError> {
+
+    if !REGISTRY_ADDRESS.exists(deps.storage) {
+        return Err(ContractError::Deleted {})
+    }
+
     match msg {
         ExecuteMsg::Execute { msgs } => try_execute(deps.as_ref(), info.sender, msgs),
 
@@ -136,51 +142,60 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
         } => try_update_ownership(deps, info.sender, new_owner, new_pubkey),
 
         ExecuteMsg::UpdatePubkey { new_pubkey } => try_change_pubkey(deps, info.sender, new_pubkey),
+
+        ExecuteMsg::Purge {} => try_purging(deps, info.sender),
     }
 }
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env : Env, msg: QueryMsg) -> StdResult<Binary> {
+
+    if !REGISTRY_ADDRESS.exists(deps.storage) {
+        return Err(StdError::GenericErr { 
+            msg: ContractError::Deleted {}.to_string() 
+        })
+    }
+
     match msg {
-        QueryMsg::Token {} => to_binary(&TOKEN_INFO.load(deps.storage)?),
-        QueryMsg::Status {} => to_binary(&STATUS.load(deps.storage)?),
-        QueryMsg::Pubkey {} => to_binary(&PUBKEY.load(deps.storage)?),
-        QueryMsg::Registry {} => to_binary(&REGISTRY_ADDRESS.load(deps.storage)?),
-        QueryMsg::Ownership {} => to_binary(&get_ownership(deps.storage)?),
+        QueryMsg::Token {} => to_json_binary(&TOKEN_INFO.load(deps.storage)?),
+        QueryMsg::Status {} => to_json_binary(&STATUS.load(deps.storage)?),
+        QueryMsg::Pubkey {} => to_json_binary(&PUBKEY.load(deps.storage)?),
+        QueryMsg::Registry {} => to_json_binary(&REGISTRY_ADDRESS.load(deps.storage)?),
+        QueryMsg::Ownership {} => to_json_binary(&get_ownership(deps.storage)?),
         QueryMsg::CanExecute { 
             sender, 
             msg 
-        } => to_binary(&can_execute(deps, sender, &msg)?),
+        } => to_json_binary(&can_execute(deps, sender, &msg)?),
         QueryMsg::ValidSignature { 
             signature, 
             data, 
             payload ,
-        } => to_binary(&valid_signature(deps, data, signature, &payload)?),
+        } => to_json_binary(&valid_signature(deps, data, signature, &payload)?),
         QueryMsg::ValidSignatures { 
             signatures, 
             data, 
             payload 
-        } => to_binary(&valid_signatures(deps, data, signatures, &payload)?),
+        } => to_json_binary(&valid_signatures(deps, data, signatures, &payload)?),
         QueryMsg::KnownTokens {
             skip,
             limit
-        } => to_binary(&known_tokens(deps, skip, limit)?),
+        } => to_json_binary(&known_tokens(deps, skip, limit)?),
         QueryMsg::Assets {
             skip,
             limit
-        } => to_binary(&assets(deps, env, skip, limit)?),
+        } => to_json_binary(&assets(deps, env, skip, limit)?),
         QueryMsg::FullInfo {
             skip,
             limit
-        } => to_binary(&full_info(deps, env, skip, limit)?)
+        } => to_json_binary(&full_info(deps, env, skip, limit)?)
 
     }
 }
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(deps: DepsMut, _: Env, _: MigrateMsg<Empty>) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, _: Env, _: MigrateMsg) -> StdResult<Response> {
     STATUS.save(deps.storage, &Status { frozen: false })?;
     Ok(Response::default())
 }

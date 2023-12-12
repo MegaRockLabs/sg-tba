@@ -9,8 +9,6 @@ repository = { workspace = true }
 cosm-orc       = "3.0.1"
 cosm-tome      = "0.1.1"
 cosmrs         = { version = "0.10.0", features = ["rpc", "cosmwasm", "grpc", "bip32"] }
-#cosm-orc       = "4.0.1"
-#cosm-tome      = "0.2.2"
 assert_matches = "1.5"
 serde_json     = "1.0"
 env_logger     = "0.10.0"
@@ -32,7 +30,7 @@ cw81                 = { workspace = true }
 cw82                 = { workspace = true }
 cw83                 = { workspace = true }
 cw721                = { workspace = true }
-sg82-token-account     = { workspace = true }
-sg83-tba-registry      = { workspace = true }
+sg82-token-account   = { workspace = true }
+sg83-tba-registry    = { workspace = true }
 sg721                = { workspace = true }
 sg721-base           = { workspace = true, features = ["library"] }

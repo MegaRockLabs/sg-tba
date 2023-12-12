@@ -10,7 +10,7 @@ use cosm_tome::chain::request::TxOptions;
 use cosm_tome::modules::bank::model::SendRequest;
 use cosmrs::crypto::secp256k1;
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Timestamp, Empty, CosmosMsg, WasmMsg, Binary, to_binary, from_binary};
+use cosmwasm_std::{Timestamp, Empty, CosmosMsg, WasmMsg, Binary, to_json_binary, from_json};
 
 use cw1::CanExecuteResponse;
 use sg82_token_account::msg::QueryMsg;
@@ -84,7 +84,7 @@ pub fn instantiate_collection(
     let init_msg : CosmosMsg::<Empty> = CosmosMsg::Wasm(WasmMsg::Instantiate { 
         admin: Some(minter.clone().to_string()), 
         code_id, 
-        msg: to_binary(&sg721::InstantiateMsg {
+        msg: to_json_binary(&sg721::InstantiateMsg {
             name: "test".to_string() + nonce.unwrap_or_default(),
             symbol: "test".to_string() + nonce.unwrap_or_default(),
             minter: minter,
@@ -136,7 +136,7 @@ pub fn mint_token(
         &cw1::Cw1ExecuteMsg::<Empty>::Execute { 
             msgs: vec![WasmMsg::Execute { 
                 contract_addr: collection, 
-                msg: to_binary(&mint_msg).unwrap(), 
+                msg: to_json_binary(&mint_msg).unwrap(), 
                 funds: vec![]
             }.into()] 
         },
@@ -202,6 +202,71 @@ pub fn create_token_account(
                 msg: init_msg,
             }
         ), 
+        key, 
+        vec![]
+    )
+}
+
+
+pub fn reset_token_account(
+    chain: &mut Chain,
+    token_contract: String,
+    token_id: String,
+    pubkey: Binary,
+    key: &SigningKey,
+) -> Result<ExecResponse, ProcessError> {
+
+    let chain_id = chain.cfg.orc_cfg.chain_cfg.chain_id.clone();
+
+    let init_msg = sg83_tba_registry::msg::CreateInitMsg {
+        pubkey,
+        token_info: TokenInfo {
+            collection: token_contract,
+            id: token_id,
+        },
+    };
+
+    let code_id = chain.orc.contract_map.code_id(ACOUNT_NAME)?;
+
+    chain.orc.execute(
+        REGISTRY_NAME, 
+        "registry_reset_account", 
+        &sg83_tba_registry::msg::ExecuteMsg::ResetAccount(
+            CreateAccountMsg {
+                code_id,
+                chain_id,
+                msg: init_msg,
+            }
+        ), 
+        key, 
+        vec![]
+    )
+}
+
+
+pub fn migrate_token_account(
+    chain: &mut Chain,
+    token_contract: String,
+    token_id: String,
+    key: &SigningKey,
+) -> Result<ExecResponse, ProcessError> {
+
+    let code_id = chain.orc.contract_map.code_id(ACOUNT_NAME)?;
+
+    let migrate_msg = sg83_tba_registry::msg::ExecuteMsg::MigrateAccount { 
+        token_info: TokenInfo {
+            collection: token_contract,
+            id: token_id,
+        }, 
+        new_code_id: code_id, 
+        msg: sg82_token_account::msg::MigrateMsg {}
+    };
+
+
+    chain.orc.execute(
+        REGISTRY_NAME, 
+        "registry_reset_account", 
+        &migrate_msg, 
         key, 
         vec![]
     )
@@ -346,8 +411,8 @@ where S: Serialize,
     )?;
 
 
-    let res : R = from_binary(
-        &res.res.data.unwrap().into()
+    let res : R = from_json(
+        &res.res.data.unwrap()
     ).unwrap();
 
     Ok(res)
@@ -369,8 +434,8 @@ pub fn query_token_owner(
         }
     ).unwrap();
 
-    let owner_res : cw721::OwnerOfResponse = from_binary(
-        &res.res.data.unwrap().into()
+    let owner_res : cw721::OwnerOfResponse = from_json(
+        &res.res.data.unwrap()
     ).unwrap();
 
     Ok(owner_res)
@@ -455,7 +520,7 @@ pub fn can_execute(
         }
     ).unwrap();
     
-    from_binary(
-        &res.res.data.unwrap().into()
+    from_json(
+        &res.res.data.unwrap()
     ).unwrap()
 }

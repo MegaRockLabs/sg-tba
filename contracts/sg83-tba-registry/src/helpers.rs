@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Deps, to_binary, Binary, Addr, Coin, StdResult, CosmosMsg, SubMsg, ReplyOn};
+use cosmwasm_std::{Deps, to_json_binary, Binary, Addr, Coin, StdResult, CosmosMsg, SubMsg, ReplyOn};
 use cw83::{Cw83RegistryBase, CREATE_ACCOUNT_REPLY_ID};
 use sg82_token_account::msg::TokenInfo;
 
@@ -39,7 +39,7 @@ impl Cw83TokenRegistryContract {
             token_id: token_id.clone(),
         };
 
-        to_binary(&msg)
+        to_json_binary(&msg)
     }
 
     pub fn create_account_init_msg(
@@ -91,7 +91,7 @@ impl Cw83TokenRegistryContract {
         &self,
         deps: Deps,
     ) -> StdResult<bool> {
-        self.cw83_wrap().supports_interface(deps)
+        self.cw83_wrap().supports_interface(&deps.querier)
     }
 
 }

@@ -1,12 +1,12 @@
 use cosmwasm_std::{
-    Deps, DepsMut, Env, Response, CosmosMsg, Addr, Binary, WasmMsg, to_binary, Coin, StdResult, SubMsg, ReplyOn,
+    Deps, DepsMut, Env, Response, CosmosMsg, Addr, Binary, WasmMsg, Coin, StdResult, SubMsg, ReplyOn, to_json_binary,
 };
 
 use cw_ownable::{assert_owner, initialize_owner, is_owner};
 use crate::{
     error::ContractError, 
     utils::{is_ok_cosmos_msg, assert_status, assert_registry, verify_nft_ownership}, 
-    state::{KNOWN_TOKENS, PUBKEY, STATUS, MINT_CACHE, TOKEN_INFO}, 
+    state::{KNOWN_TOKENS, PUBKEY, STATUS, MINT_CACHE, TOKEN_INFO, REGISTRY_ADDRESS}, 
     msg::Status, 
 };
 
@@ -238,7 +238,7 @@ pub fn try_transfer_token(
 
     let msg : CosmosMsg = WasmMsg::Execute { 
         contract_addr: collection, 
-        msg: to_binary(&sg721_base::ExecuteMsg::TransferNft { 
+        msg: to_json_binary(&sg721_base::ExecuteMsg::TransferNft { 
             recipient, 
             token_id, 
         })?, 
@@ -270,7 +270,7 @@ pub fn try_send_token(
 
     let msg : CosmosMsg = WasmMsg::Execute { 
         contract_addr: collection, 
-        msg: to_binary(&sg721_base::ExecuteMsg::SendNft { 
+        msg: to_json_binary(&sg721_base::ExecuteMsg::SendNft { 
             contract, 
             token_id, 
             msg
@@ -281,5 +281,25 @@ pub fn try_send_token(
     Ok(Response::default()
         .add_message(msg)
         .add_attribute("action", "send_token")
+    )
+}
+
+
+
+pub fn try_purging(
+    deps: DepsMut,
+    sender: Addr
+) -> Result<Response, ContractError> {
+    assert_registry(deps.storage, &sender)?;
+    
+    KNOWN_TOKENS.clear(deps.storage);
+    REGISTRY_ADDRESS.remove(deps.storage);
+    MINT_CACHE.remove(deps.storage);
+    TOKEN_INFO.remove(deps.storage);
+    PUBKEY.remove(deps.storage);
+    STATUS.remove(deps.storage);
+
+    Ok(Response::default()
+        .add_attribute("action", "purge")
     )
 }

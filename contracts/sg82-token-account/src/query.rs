@@ -1,4 +1,4 @@
-use cosmwasm_std::{StdResult, Deps, Binary, Order, Env, CosmosMsg, from_binary};
+use cosmwasm_std::{StdResult, Deps, Binary, Order, Env, CosmosMsg, from_json};
 use cw82::{CanExecuteResponse, ValidSignatureResponse, ValidSignaturesResponse};
 use k256::sha2::{Digest, Sha256};
 use cw_ownable::is_owner;
@@ -103,7 +103,7 @@ pub fn verify_arbitrary(
     let digest = Sha256::new_with_prefix(
         generate_amino_transaction_string(
         account_addr,
-        from_binary::<String>(&data)?.as_str(),
+        from_json::<String>(&data)?.as_str(),
     )).finalize();
 
     deps.api.secp256k1_verify(

@@ -3,11 +3,6 @@
 Stargaze contracts implementing [cw82](https://github.com/MegaRockLabs/cw-extra/tree/main/packages/cw82) and [cw83](https://github.com/MegaRockLabs/cw-extra/tree/main/packages/cw83) 
 
 
-
-  - Ability for the NFT owner to execute any Bank, Staking and IBC messages from its associated smart account  
-  - Concept of token awareness allowing to instanly query the inventory of 
-  - 
-
 ## Token Registry
 
 Token-Bound Account Registry that follows [cw83](https://github.com/MegaRockLabs/cw-extra/tree/main/packages/cw83) account registry standard.  
@@ -27,7 +22,7 @@ A smart contract based account following [cw82](https://github.com/MegaRockLabs/
 
 Uses a secp256k1 public key and support arbitrary signature verification defined in [036](https://github.com/cosmos/cosmos-sdk/blob/main/docs/architecture/adr-036-arbitrary-signature.md) 
 
-As a minimal proxy following [cw1](https://github.com/CosmWasm/cw-plus/tree/main/packages/cw1) allows to initiate messages with the smart account as an initiator (msg.sender) but only to the owner of a token the account is linked to. Ownership verification happens through the registry and the new owner must claim the account through it to get access.
+As a minimal proxy following [cw1](https://github.com/CosmWasm/cw-plus/tree/main/packages/cw1) allows executing messages with the smart account as an initiator (msg.sender) but only for the owner of an NFT the account is linked to. Ownership verification happens through the registry and that must be notified for the new owneship to take place.
 
 The contract implementation allows accounts to become aware of other tokens in their posession. This allows users to directly query the (recognised) asset inventory and gives a flexibilty for the owner to explicitely associate itself with certain tokens
 

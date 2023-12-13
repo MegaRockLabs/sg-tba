@@ -7,7 +7,7 @@ use cw_ownable::{get_ownership, initialize_owner};
 use cosmwasm_std::entry_point;
 
 use crate::{
-    state::{REGISTRY_ADDRESS, TOKEN_INFO, PUBKEY, STATUS, MINT_CACHE}, 
+    state::{REGISTRY_ADDRESS, TOKEN_INFO, PUBKEY, STATUS, MINT_CACHE, SERIAL}, 
     msg::{QueryMsg, InstantiateMsg, ExecuteMsg, TokenInfo, Status, MigrateMsg}, 
     error::ContractError, 
     query::{can_execute, valid_signature, valid_signatures, known_tokens, assets, full_info}, 
@@ -73,7 +73,7 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
     REGISTRY_ADDRESS.save(deps.storage, &info.sender.to_string())?;
     STATUS.save(deps.storage, &Status { frozen: false })?;
     PUBKEY.save(deps.storage, &msg.pubkey)?;
-
+    SERIAL.save(deps.storage, &0u128)?;
 
     Ok(Response::default()
 )
@@ -87,6 +87,7 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
     if !REGISTRY_ADDRESS.exists(deps.storage) {
         return Err(ContractError::Deleted {})
     }
+    SERIAL.update(deps.storage, |s| Ok::<u128, StdError>(s + 1))?;
 
     match msg {
         ExecuteMsg::Execute { msgs } => try_execute(deps.as_ref(), info.sender, msgs),
@@ -160,6 +161,7 @@ pub fn query(deps: Deps, env : Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Token {} => to_json_binary(&TOKEN_INFO.load(deps.storage)?),
         QueryMsg::Status {} => to_json_binary(&STATUS.load(deps.storage)?),
+        QueryMsg::Serial {} => to_json_binary(&SERIAL.load(deps.storage)?),
         QueryMsg::Pubkey {} => to_json_binary(&PUBKEY.load(deps.storage)?),
         QueryMsg::Registry {} => to_json_binary(&REGISTRY_ADDRESS.load(deps.storage)?),
         QueryMsg::Ownership {} => to_json_binary(&get_ownership(deps.storage)?),

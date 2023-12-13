@@ -119,7 +119,11 @@ pub enum QueryMsgBase <T = Empty> {
     FullInfo {
         skip: Option<u32>,
         limit: Option<u32>
-    }
+    },
+
+    /// Incremental number telling wether a direct interaction with the account has occured
+    #[returns(u128)]
+    Serial {}
 }
 
 /// [TokenInfo] is used as a to query the account info
@@ -185,7 +189,7 @@ pub enum ExecuteMsg {
         /// Current NFT holder
         new_owner: String, 
         /// New secp256k1 public key
-        new_pubkey: Binary 
+        new_pubkey: Option<Binary> 
     },
 
     /// Owner only method to update a public key

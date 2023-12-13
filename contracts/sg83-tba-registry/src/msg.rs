@@ -136,7 +136,7 @@ pub enum ExecuteMsg {
         /// Non-Fungible Token Info that the existing account is linked to
         token_info: TokenInfo,
         /// New public key of the account used for (cw81 signature verification)
-        new_pubkey: Binary,
+        new_pubkey: Option<Binary>,
         /// Admin only parameter to update the account on behalf of another user that holds the token
         update_for: Option<Addr>,
     },

@@ -6,7 +6,7 @@ use cw_ownable::{assert_owner, initialize_owner, is_owner};
 use crate::{
     error::ContractError, 
     utils::{is_ok_cosmos_msg, assert_status, assert_registry, verify_nft_ownership}, 
-    state::{KNOWN_TOKENS, PUBKEY, STATUS, MINT_CACHE, TOKEN_INFO, REGISTRY_ADDRESS}, 
+    state::{KNOWN_TOKENS, PUBKEY, STATUS, MINT_CACHE, TOKEN_INFO, REGISTRY_ADDRESS, SERIAL}, 
     msg::Status, 
 };
 
@@ -105,12 +105,16 @@ pub fn try_update_ownership(
     deps: DepsMut,
     sender: Addr,
     new_owner: String,
-    new_pubkey: Binary
+    new_pubkey: Option<Binary>
 ) -> Result<Response, ContractError> {
     assert_registry(deps.storage, &sender)?;
     initialize_owner(deps.storage, deps.api, Some(&new_owner))?;
-    STATUS.save(deps.storage, &Status { frozen: false })?;
-    PUBKEY.save(deps.storage, &new_pubkey)?;
+
+    if new_pubkey.is_some() {
+        PUBKEY.save(deps.storage, &new_pubkey.unwrap())?;
+        STATUS.save(deps.storage, &Status { frozen: false })?;
+    }
+
     Ok(
         Response::default()
             .add_attribute("action", "update_ownership")
@@ -296,6 +300,7 @@ pub fn try_purging(
     REGISTRY_ADDRESS.remove(deps.storage);
     MINT_CACHE.remove(deps.storage);
     TOKEN_INFO.remove(deps.storage);
+    SERIAL.remove(deps.storage);
     PUBKEY.remove(deps.storage);
     STATUS.remove(deps.storage);
 

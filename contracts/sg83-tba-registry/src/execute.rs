@@ -116,7 +116,7 @@ pub fn update_account_owner(
     deps: DepsMut,
     sender: Addr,
     token_info: TokenInfo,
-    new_pubkey: Binary,
+    new_pubkey: Option<Binary>,
     funds: Vec<Coin>,
     update_for: Option<Addr>
 ) -> Result<Response, ContractError> {

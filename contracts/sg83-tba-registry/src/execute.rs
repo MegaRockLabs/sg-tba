@@ -63,6 +63,8 @@ pub fn create_account(
         (token_info.collection.as_str(), token_info.id.as_str())
     )?;
 
+    let label : String;
+
     if token_address.is_some() {
 
         if !reset {
@@ -74,6 +76,11 @@ pub fn create_account(
             msg: to_json_binary(&sg82_token_account::msg::ExecuteMsg::Purge {})?,
             funds: vec![]
         });
+
+        label = construct_label(&token_info, Some(env.block.height));
+
+    } else {
+        label = construct_label(&token_info, None);
     }
 
     LAST_ATTEMPTING.save(deps.storage, &token_info)?;
@@ -93,8 +100,8 @@ pub fn create_account(
                     admin: Some(env.contract.address.to_string()), 
                     code_id, 
                     msg: to_json_binary(&init_msg)?, 
-                    funds, 
-                    label: construct_label(&token_info) 
+                    label,
+                    funds
                 }
             ),
             reply_on: ReplyOn::Success,

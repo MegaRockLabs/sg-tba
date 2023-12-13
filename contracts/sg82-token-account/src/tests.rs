@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{Binary, to_binary, 
-        testing::{mock_dependencies, mock_env, mock_info }, from_binary
+    use cosmwasm_std::{Binary, to_json_binary, 
+        testing::{mock_dependencies, mock_env, mock_info }, from_json
     };
     use cw22::set_contract_supported_interface;
     use cw82::ValidSignatureResponse;
@@ -24,7 +24,7 @@ mod tests {
         let ok = verify_arbitrary(
             deps.as_ref(),
             ACCOUNT,
-            to_binary(MSG).unwrap(),
+            to_json_binary(MSG).unwrap(),
             Binary::from_base64(SIGNATURE).unwrap(),
             Binary::from_base64(PUBKEY).unwrap().as_slice(),
         ).unwrap();
@@ -61,9 +61,9 @@ mod tests {
         ).unwrap();
 
         let msg = QueryMsg::ValidSignature { 
-            data: to_binary(&MSG).unwrap(), 
+            data: to_json_binary(&MSG).unwrap(), 
             signature: Binary::from_base64(SIGNATURE).unwrap(), 
-            payload: Some(to_binary(&PayloadInfo {
+            payload: Some(to_json_binary(&PayloadInfo {
                 account: ACCOUNT.into(),
                 algo: "amino".into()
             }).unwrap())
@@ -75,7 +75,7 @@ mod tests {
             msg
         ).unwrap();
 
-        let res : ValidSignatureResponse = from_binary(&query_res).unwrap();
+        let res : ValidSignatureResponse = from_json(&query_res).unwrap();
 
         assert!(res.is_valid)
 

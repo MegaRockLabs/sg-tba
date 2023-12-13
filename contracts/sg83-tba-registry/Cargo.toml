@@ -4,8 +4,7 @@ version     = { workspace = true }
 edition     = { workspace = true }
 repository  = { workspace = true }
 authors = [ "Kromsten <s@noreply.megarock.labs>" ]
-description = "Example contract showcasing cw83 that uses the last signature in the storage for verification"
-
+description = "Stargaze Token Bound Account Registry"
 
 exclude = [
   "contract.wasm",

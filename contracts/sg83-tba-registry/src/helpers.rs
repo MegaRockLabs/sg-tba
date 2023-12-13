@@ -5,9 +5,14 @@ use sg82_token_account::msg::TokenInfo;
 
 
 pub fn construct_label(
-    info: &TokenInfo
+    info: &TokenInfo,
+    serial: Option<u64>
 ) -> String {
-    format!("{}-{}-account", info.collection, info.id)
+    let base =  format!("{}-{}-account", info.collection, info.id);
+    match serial {
+        Some(s) => format!("{}-{}", base, s),
+        None => base
+    }
 }
 
 
@@ -48,7 +53,8 @@ impl Cw83TokenRegistryContract {
         owner: String,
         info: &TokenInfo,
         pubkey: Binary,
-        funds: Vec<Coin>
+        funds: Vec<Coin>,
+        serial: Option<u64>
     ) -> StdResult<CosmosMsg> {
 
         self.cw83_wrap().create_account_init_msg(
@@ -60,7 +66,7 @@ impl Cw83TokenRegistryContract {
                 info.id.clone(),
             )?,
             funds,
-            construct_label(info)
+            construct_label(info, serial)
         )
     }
 
@@ -70,7 +76,8 @@ impl Cw83TokenRegistryContract {
         owner: String,
         info: &TokenInfo,
         pubkey: Binary,
-        funds: Vec<Coin>
+        funds: Vec<Coin>,
+        serial: Option<u64>
     ) -> StdResult<SubMsg> {
 
         Ok(SubMsg {
@@ -80,7 +87,8 @@ impl Cw83TokenRegistryContract {
                 owner,
                 info,
                 pubkey,
-                funds
+                funds,
+                serial
             )?,
             reply_on: ReplyOn::Success,
             gas_limit: None

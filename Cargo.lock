@@ -893,10 +893,11 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
+ "sg-tba",
  "sg721",
  "sg721-base",
- "sg82-token-account",
- "sg83-tba-registry",
+ "sg82-base",
+ "sg83-base",
  "test-context",
  "tokio",
 ]
@@ -2316,6 +2317,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "sg-tba"
+version = "1.0.2"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "schemars",
+]
+
+[[package]]
 name = "sg721"
 version = "3.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2352,7 +2362,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sg82-token-account"
+name = "sg82-base"
 version = "1.0.2"
 dependencies = [
  "cosmwasm-schema",
@@ -2367,13 +2377,14 @@ dependencies = [
  "cw83",
  "k256 0.13.2",
  "semver",
+ "sg-tba",
  "sg721-base",
  "sha2 0.10.8",
  "thiserror",
 ]
 
 [[package]]
-name = "sg83-tba-registry"
+name = "sg83-base"
 version = "1.0.2"
 dependencies = [
  "cosmwasm-schema",
@@ -2386,8 +2397,9 @@ dependencies = [
  "cw82",
  "cw83",
  "semver",
+ "sg-tba",
  "sg721-base",
- "sg82-token-account",
+ "sg82-base",
  "thiserror",
 ]
 

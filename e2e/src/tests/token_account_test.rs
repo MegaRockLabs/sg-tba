@@ -3,13 +3,13 @@ use cosm_tome::{modules::bank::model::SendRequest, chain::request::TxOptions};
 use cosm_tome::chain::coin::Coin;
 use cosmwasm_std::{Binary, CosmosMsg, BankMsg, WasmMsg, from_json, to_json_binary};
 use cw_ownable::Ownership;
+use sg_tba::TokenInfo;
 use test_context::test_context;
 
-use sg82_token_account::msg::{
+use sg82_base::msg::{
     QueryMsg, 
     AssetsResponse, 
     Status, 
-    TokenInfo, 
     KnownTokensResponse,
     ExecuteMsg as TAExecuteMsg
 };

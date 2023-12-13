@@ -1,6 +1,7 @@
 use cosmwasm_std::from_json;
+use sg_tba::TokenInfo;
 use test_context::test_context;
-use sg83_tba_registry::msg::{self as RegistryMsg, TokenInfo};
+use sg83_base::msg::{self as RegistryMsg};
 use RegistryMsg::QueryMsg as RegistryQuery;
 
 use crate::helpers::{

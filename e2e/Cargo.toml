@@ -30,7 +30,8 @@ cw81                 = { workspace = true }
 cw82                 = { workspace = true }
 cw83                 = { workspace = true }
 cw721                = { workspace = true }
-sg82-token-account   = { workspace = true }
-sg83-tba-registry    = { workspace = true }
+sg-tba               = { workspace = true }
+sg82-base            = { workspace = true }
+sg83-base            = { workspace = true }
 sg721                = { workspace = true }
 sg721-base           = { workspace = true, features = ["library"] }

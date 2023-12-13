@@ -1,5 +1,5 @@
 use cosmwasm_schema::write_api;
-use sg83_tba_registry::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use sg83_base::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
 fn main() {
     write_api! {

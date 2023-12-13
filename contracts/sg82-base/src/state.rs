@@ -1,7 +1,8 @@
 use cosmwasm_std::Binary;
 use cw_storage_plus::{Item, Map};
+use sg_tba::TokenInfo;
 
-use crate::msg::{TokenInfo, Status};
+use crate::msg::Status;
 
 pub static REGISTRY_ADDRESS : Item<String>      = Item::new("r");
 pub static TOKEN_INFO       : Item<TokenInfo>   = Item::new("t");

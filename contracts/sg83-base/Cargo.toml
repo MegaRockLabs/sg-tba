@@ -1,5 +1,5 @@
 [package]
-name        = "sg83-tba-registry"
+name        = "sg83-base"
 version     = { workspace = true }
 edition     = { workspace = true }
 repository  = { workspace = true }
@@ -30,5 +30,6 @@ cw82                = { workspace = true }
 cw83                = { workspace = true }
 cw22                = { workspace = true }
 cw721               = { workspace = true }
+sg-tba              = { workspace = true }
+sg82-base           = { workspace = true, features = ["library"] }
 sg721-base          = { workspace = true, features = ["library"] }
-sg82-token-account    = { workspace = true, features = ["library"] }

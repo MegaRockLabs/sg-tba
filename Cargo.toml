@@ -39,15 +39,16 @@ cw721                   = "0.18.0"
 sg721                   = "3.3.0"
 sg721-base              = "3.3.0"
 
-sg82-token-account      = { path = "contracts/sg82-token-account" }
-sg83-tba-registry       = { path = "contracts/sg83-tba-registry" }
+sg-tba                  = { path = "packages/sg-tba" }
+sg82-base               = { path = "contracts/sg82-base" }
+sg83-base               = { path = "contracts/sg83-base" }
 
 
-[profile.release.package.sg82-token-account]
+[profile.release.package.sg82-base]
 codegen-units = 1
 incremental   = false
 
-[profile.release.package.sg83-tba-registry]
+[profile.release.package.sg83-base]
 codegen-units = 1
 incremental = false
 

@@ -1,5 +1,5 @@
 [package]
-name = "sg82-token-account"
+name = "sg82-base"
 version     = { workspace = true }
 edition     = { workspace = true }
 repository  = { workspace = true }
@@ -35,3 +35,5 @@ cw82            = { workspace = true }
 cw83            = { workspace = true }
 cw721           = { workspace = true }
 sg721-base      = { workspace = true, features = ["library"] }
+
+sg-tba          = { workspace = true }

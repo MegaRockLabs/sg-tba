@@ -6,9 +6,11 @@ use cw_ownable::{get_ownership, initialize_owner};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 
+use sg_tba::{MigrateAccountMsg, TokenInfo};
+
 use crate::{
     state::{REGISTRY_ADDRESS, TOKEN_INFO, PUBKEY, STATUS, MINT_CACHE, SERIAL}, 
-    msg::{QueryMsg, InstantiateMsg, ExecuteMsg, TokenInfo, Status, MigrateMsg}, 
+    msg::{QueryMsg, InstantiateMsg, ExecuteMsg, Status}, 
     error::ContractError, 
     query::{can_execute, valid_signature, valid_signatures, known_tokens, assets, full_info}, 
     execute::{
@@ -197,7 +199,7 @@ pub fn query(deps: Deps, env : Env, msg: QueryMsg) -> StdResult<Binary> {
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(deps: DepsMut, _: Env, _: MigrateMsg) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, _: Env, _: MigrateAccountMsg) -> StdResult<Response> {
     STATUS.save(deps.storage, &Status { frozen: false })?;
     Ok(Response::default())
 }
@@ -210,6 +212,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> Result<Response, ContractEr
             let collection = MINT_CACHE.load(deps.storage)?;
             MINT_CACHE.remove(deps.storage);
 
+            // query all the held tokens for the collection stored in CACHE
             try_update_known_tokens(
                 deps, 
                 env.clone(), 

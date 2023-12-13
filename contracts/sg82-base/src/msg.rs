@@ -8,6 +8,7 @@ pub use cw82::{
     ValidSignaturesResponse
 };
 use cw_ownable::cw_ownable_query;
+use sg_tba::TokenInfo;
 
 
 /// Instantiate message only callable by a cw83 registry. 
@@ -22,15 +23,6 @@ pub struct InstantiateMsg {
     pub token_contract: String,
     /// Token id
     pub token_id: String
-}
-
-
-#[cw_serde]
-pub struct TokenInfo {
-    /// Contract address of the collection
-    pub collection: String,
-    /// Token id
-    pub id: String
 }
 
 
@@ -210,7 +202,3 @@ pub enum ExecuteMsg {
     /// Remove all the data from the contract and make it unsuable
     Purge {}
 }
-
-
-#[cw_serde]
-pub struct MigrateMsg {}

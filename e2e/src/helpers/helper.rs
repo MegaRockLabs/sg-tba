@@ -13,16 +13,17 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Timestamp, Empty, CosmosMsg, WasmMsg, Binary, to_json_binary, from_json};
 
 use cw1::CanExecuteResponse;
-use sg82_token_account::msg::QueryMsg;
-use sg83_tba_registry::msg::{InstantiateMsg, CreateAccountMsg, TokenInfo};
+use sg82_base::msg::QueryMsg;
+use sg83_base::msg::{InstantiateMsg, CreateAccountMsg};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
+use sg_tba::{MigrateAccountMsg, TokenInfo};
 
 // contract names used by cosm-orc to register stored code ids / instantiated addresses:
-pub const REGISTRY_NAME     : &str = "sg83_tba_registry";
-pub const ACOUNT_NAME       : &str = "sg82_token_account";
-pub const PROXY_NAME        : &str = "cw1_whitelist";
 pub const COLLECTION_NAME   : &str = "sg721_base";
+pub const REGISTRY_NAME     : &str = "sg83_base";
+pub const ACOUNT_NAME       : &str = "sg82_base";
+pub const PROXY_NAME        : &str = "cw1_whitelist";
 
 
 pub const MAX_TOKENS: u32 = 10_000;
@@ -182,7 +183,7 @@ pub fn create_token_account(
 
     let chain_id = chain.cfg.orc_cfg.chain_cfg.chain_id.clone();
 
-    let init_msg = sg83_tba_registry::msg::CreateInitMsg {
+    let init_msg = sg83_base::msg::CreateInitMsg {
         pubkey,
         token_info: TokenInfo {
             collection: token_contract,
@@ -195,7 +196,7 @@ pub fn create_token_account(
     chain.orc.execute(
         REGISTRY_NAME, 
         "registry_create_account", 
-        &sg83_tba_registry::msg::ExecuteMsg::CreateAccount(
+        &sg83_base::msg::ExecuteMsg::CreateAccount(
             CreateAccountMsg {
                 code_id,
                 chain_id,
@@ -218,7 +219,7 @@ pub fn reset_token_account(
 
     let chain_id = chain.cfg.orc_cfg.chain_cfg.chain_id.clone();
 
-    let init_msg = sg83_tba_registry::msg::CreateInitMsg {
+    let init_msg = sg83_base::msg::CreateInitMsg {
         pubkey,
         token_info: TokenInfo {
             collection: token_contract,
@@ -231,7 +232,7 @@ pub fn reset_token_account(
     chain.orc.execute(
         REGISTRY_NAME, 
         "registry_reset_account", 
-        &sg83_tba_registry::msg::ExecuteMsg::ResetAccount(
+        &sg83_base::msg::ExecuteMsg::ResetAccount(
             CreateAccountMsg {
                 code_id,
                 chain_id,
@@ -253,13 +254,13 @@ pub fn migrate_token_account(
 
     let code_id = chain.orc.contract_map.code_id(ACOUNT_NAME)?;
 
-    let migrate_msg = sg83_tba_registry::msg::ExecuteMsg::MigrateAccount { 
+    let migrate_msg = sg83_base::msg::ExecuteMsg::MigrateAccount { 
         token_info: TokenInfo {
             collection: token_contract,
             id: token_id,
         }, 
         new_code_id: code_id, 
-        msg: sg82_token_account::msg::MigrateMsg {}
+        msg: MigrateAccountMsg { params: Box::new(None) }
     };
 
 

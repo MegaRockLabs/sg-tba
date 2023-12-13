@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Deps, to_json_binary, Binary, Addr, Coin, StdResult, CosmosMsg, SubMsg, ReplyOn};
 use cw83::{Cw83RegistryBase, CREATE_ACCOUNT_REPLY_ID};
-use sg82_token_account::msg::TokenInfo;
+use sg_tba::TokenInfo;
 
 
 pub fn construct_label(
@@ -37,7 +37,7 @@ impl Cw83TokenRegistryContract {
         token_id: String,
     ) -> StdResult<Binary> {
 
-        let msg = sg82_token_account::msg::InstantiateMsg {
+        let msg = sg82_base::msg::InstantiateMsg {
             owner,
             pubkey,
             token_contract: token_contract.clone(),

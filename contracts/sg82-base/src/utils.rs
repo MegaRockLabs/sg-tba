@@ -1,5 +1,6 @@
 use cosmwasm_std::{Addr, StdResult, Binary, StdError, CosmosMsg, WasmMsg, Storage, QuerierWrapper, from_json};
-use crate::{msg::{PayloadInfo, TokenInfo}, error::ContractError, state::{STATUS, REGISTRY_ADDRESS}};
+use sg_tba::TokenInfo;
+use crate::{msg::PayloadInfo, error::ContractError, state::{STATUS, REGISTRY_ADDRESS}};
 
 pub fn assert_status(
     store: &dyn Storage

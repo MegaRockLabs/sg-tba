@@ -5,7 +5,7 @@ use cw83::{registry_query, registry_execute,
     AccountQuery as AccountQueryBase,
     AccountInfoResponse as AccountInfoResponseBase,
 };
-pub use sg82_token_account::msg::TokenInfo;
+use sg_tba::{MigrateAccountMsg, TokenInfo};
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -151,7 +151,7 @@ pub enum ExecuteMsg {
         /// New code id to migrate the account to
         new_code_id: u64,
         /// Migration message to be passed to the account contract
-        msg: sg82_token_account::msg::MigrateMsg
+        msg: MigrateAccountMsg
     }
 
 }

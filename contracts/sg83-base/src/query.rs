@@ -1,5 +1,5 @@
 use cosmwasm_std::{StdResult, Deps, Order};
-use sg82_token_account::msg::TokenInfo;
+use sg_tba::TokenInfo;
 
 use crate::{
     state::{TOKEN_ADDRESSES, COL_TOKEN_COUNTS}, 

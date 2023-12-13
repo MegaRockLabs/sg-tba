@@ -13,10 +13,8 @@ use cosmwasm_std::{
 };
 
 use cw83::CREATE_ACCOUNT_REPLY_ID;
-use sg82_token_account::{
-    msg::{TokenInfo, MigrateMsg}, 
-    utils::verify_nft_ownership
-};
+use sg82_base::utils::verify_nft_ownership;
+use sg_tba::{TokenInfo, MigrateAccountMsg};
 
 use crate::{
     state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, ADMINS, ALLOWED_IDS},
@@ -73,7 +71,7 @@ pub fn create_account(
 
         res = res.add_message(WasmMsg::Execute {
             contract_addr: token_address.unwrap(),
-            msg: to_json_binary(&sg82_token_account::msg::ExecuteMsg::Purge {})?,
+            msg: to_json_binary(&sg82_base::msg::ExecuteMsg::Purge {})?,
             funds: vec![]
         });
 
@@ -85,7 +83,7 @@ pub fn create_account(
 
     LAST_ATTEMPTING.save(deps.storage, &token_info)?;
 
-    let init_msg = sg82_token_account::msg::InstantiateMsg {
+    let init_msg = sg82_base::msg::InstantiateMsg {
         owner: sender.clone(),
         token_contract: token_info.collection.clone(),
         token_id: token_info.id.clone(),
@@ -131,11 +129,12 @@ pub fn update_account_owner(
         (token_info.collection.as_str(), token_info.id.as_str())
     )?;
 
+    // only admin can update ownership but only if the new address is the token owner
     if owner != sender && !is_admin {
         return Err(ContractError::Unauthorized {})
     }
 
-    let msg = sg82_token_account::msg::ExecuteMsg::UpdateOwnership { 
+    let msg = sg82_base::msg::ExecuteMsg::UpdateOwnership { 
         new_owner: owner.to_string(), 
         new_pubkey
     };
@@ -164,7 +163,7 @@ pub fn migrate_account(
     sender: Addr,
     token_info: TokenInfo,
     new_code_id: u64,
-    msg: MigrateMsg
+    msg: MigrateAccountMsg
 ) -> Result<Response, ContractError> {
 
     if !ALLOWED_IDS.load(deps.storage)?.contains(&new_code_id) {

@@ -1,0 +1,15 @@
+[package]
+name = "sg-tba"
+authors = [ "Kromsten <s@noreply.megarock.labs>" ]
+edition     = { workspace = true }
+version     = { workspace = true }
+repository  = { workspace = true }
+description = "Definition and types for Stargaze Token-Bound Accounts"
+
+[dependencies]
+cosmwasm-schema = { workspace = true }
+cosmwasm-std    = { workspace = true }
+schemars        = { workspace = true }
+
+
+[dev-dependencies]

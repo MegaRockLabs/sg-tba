@@ -2,11 +2,12 @@ use cosmwasm_std::{StdResult, Deps, Binary, Order, Env, CosmosMsg, from_json};
 use cw82::{CanExecuteResponse, ValidSignatureResponse, ValidSignaturesResponse};
 use k256::sha2::{Digest, Sha256};
 use cw_ownable::is_owner;
+use sg_tba::TokenInfo;
 
 use crate::{
     state::{PUBKEY, KNOWN_TOKENS, TOKEN_INFO, STATUS, REGISTRY_ADDRESS}, 
     utils::{generate_amino_transaction_string, parse_payload, is_ok_cosmos_msg, status_ok, assert_status}, 
-    msg::{AssetsResponse, TokenInfo, FullInfoResponse}
+    msg::{AssetsResponse, FullInfoResponse}
 };
 
 

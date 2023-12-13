@@ -7,7 +7,7 @@ use sg_tba::TokenInfo;
 use crate::{
     state::{PUBKEY, KNOWN_TOKENS, TOKEN_INFO, STATUS, REGISTRY_ADDRESS}, 
     utils::{generate_amino_transaction_string, parse_payload, is_ok_cosmos_msg, status_ok, assert_status}, 
-    msg::{AssetsResponse, FullInfoResponse}
+    msg::{AssetsResponse, FullInfoResponse, StarCosmosMsg}
 };
 
 
@@ -17,7 +17,7 @@ const DEFAULT_BATCH_SIZE : u32 = 100;
 pub fn can_execute(
     deps: Deps,
     sender: String,
-    msg: &CosmosMsg
+    msg: &StarCosmosMsg
 ) -> StdResult<CanExecuteResponse> {
 
     let cant = CanExecuteResponse { can_execute: false };

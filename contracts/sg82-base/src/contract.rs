@@ -10,7 +10,7 @@ use sg_tba::{MigrateAccountMsg, TokenInfo};
 
 use crate::{
     state::{REGISTRY_ADDRESS, TOKEN_INFO, PUBKEY, STATUS, MINT_CACHE, SERIAL}, 
-    msg::{QueryMsg, InstantiateMsg, ExecuteMsg, Status}, 
+    msg::{QueryMsg, InstantiateMsg, ExecuteMsg, Status, StargazeResult}, 
     error::ContractError, 
     query::{can_execute, valid_signature, valid_signatures, known_tokens, assets, full_info}, 
     execute::{
@@ -84,7 +84,7 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg) 
--> Result<Response, ContractError> {
+-> StargazeResult {
 
     if !REGISTRY_ADDRESS.exists(deps.storage) {
         return Err(ContractError::Deleted {})
@@ -206,7 +206,7 @@ pub fn migrate(deps: DepsMut, _: Env, _: MigrateAccountMsg) -> StdResult<Respons
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> Result<Response, ContractError> {
+pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StargazeResult {
     match msg.id {
         MINT_REPLY_ID => {
             let collection = MINT_CACHE.load(deps.storage)?;

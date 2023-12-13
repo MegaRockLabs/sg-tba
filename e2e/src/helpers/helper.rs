@@ -17,6 +17,7 @@ use sg82_base::msg::QueryMsg;
 use sg83_base::msg::{InstantiateMsg, CreateAccountMsg};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
+use sg_std::StargazeMsgWrapper;
 use sg_tba::{MigrateAccountMsg, TokenInfo};
 
 // contract names used by cosm-orc to register stored code ids / instantiated addresses:
@@ -510,7 +511,7 @@ pub fn can_execute(
     chain: &mut Chain, 
     token_account: &String, 
     sender: String, 
-    msg: CosmosMsg<Empty>
+    msg: CosmosMsg<StargazeMsgWrapper>
 ) -> CanExecuteResponse {
     let res = wasm_query(
         chain, 

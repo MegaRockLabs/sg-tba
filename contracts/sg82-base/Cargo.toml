@@ -35,5 +35,5 @@ cw82            = { workspace = true }
 cw83            = { workspace = true }
 cw721           = { workspace = true }
 sg721-base      = { workspace = true, features = ["library"] }
-
 sg-tba          = { workspace = true }
+sg-std          = { workspace = true }

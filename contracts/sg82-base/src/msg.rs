@@ -1,4 +1,4 @@
-use cosmwasm_std::{Binary, Empty, CosmosMsg, Coin, Addr};
+use cosmwasm_std::{Binary, Empty, CosmosMsg, Coin, Addr, Response};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cw721::Cw721ReceiveMsg;
 pub use cw82::{
@@ -8,7 +8,10 @@ pub use cw82::{
     ValidSignaturesResponse
 };
 use cw_ownable::cw_ownable_query;
+use sg_std::{StargazeMsg, StargazeMsgWrapper};
 use sg_tba::TokenInfo;
+
+use crate::error::ContractError;
 
 
 /// Instantiate message only callable by a cw83 registry. 
@@ -120,7 +123,7 @@ pub enum QueryMsgBase <T = Empty> {
 
 /// [TokenInfo] is used as a to query the account info
 /// so no need to return any additional data
-pub type QueryMsg = QueryMsgBase<Empty>;
+pub type QueryMsg = QueryMsgBase<StargazeMsgWrapper>;
 
 
 #[cw_serde]
@@ -129,7 +132,7 @@ pub enum ExecuteMsg {
     /// Wasm and Stargate messages aren't supported
     /// Only the current holder can execute this method
     Execute { 
-        msgs: Vec<CosmosMsg<Empty>> 
+        msgs: Vec<StarCosmosMsg> 
     },
     /// Mint NFTs directly from token account
     MintToken { 
@@ -202,3 +205,8 @@ pub enum ExecuteMsg {
     /// Remove all the data from the contract and make it unsuable
     Purge {}
 }
+
+
+pub type StarCosmosMsg = CosmosMsg<StargazeMsgWrapper>;
+pub type StargazeResponse = Response::<StargazeMsgWrapper>;
+pub type StargazeResult = Result<StargazeResponse, ContractError>;

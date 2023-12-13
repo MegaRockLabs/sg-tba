@@ -1,6 +1,6 @@
 use cosmwasm_std::{Addr, StdResult, Binary, StdError, CosmosMsg, WasmMsg, Storage, QuerierWrapper, from_json};
 use sg_tba::TokenInfo;
-use crate::{msg::PayloadInfo, error::ContractError, state::{STATUS, REGISTRY_ADDRESS}};
+use crate::{msg::{PayloadInfo, StarCosmosMsg}, error::ContractError, state::{STATUS, REGISTRY_ADDRESS}};
 
 pub fn assert_status(
     store: &dyn Storage
@@ -29,19 +29,18 @@ pub fn assert_ok_wasm_msg(
 
 
 pub fn assert_ok_cosmos_msg(
-    msg: &CosmosMsg
+    msg: &StarCosmosMsg
 ) -> StdResult<()> {
     let bad_msg_error = StdError::GenericErr { msg: "Not Supported".into() };
     match msg {
         CosmosMsg::Wasm(msg) => assert_ok_wasm_msg(msg),
-        CosmosMsg::Custom(_) => Err(bad_msg_error),
         CosmosMsg::Stargate { .. } => Err(bad_msg_error),
         _ => Ok(())
     }
 }
 
 pub fn is_ok_cosmos_msg(
-    msg: &CosmosMsg
+    msg: &StarCosmosMsg
 ) -> bool {
     assert_ok_cosmos_msg(msg).is_ok()
 }

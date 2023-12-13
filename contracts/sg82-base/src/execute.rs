@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    Deps, DepsMut, Env, Response, CosmosMsg, Addr, Binary, WasmMsg, Coin, StdResult, SubMsg, ReplyOn, to_json_binary,
+    Deps, DepsMut, Env, CosmosMsg, Addr, Binary, WasmMsg, Coin, StdResult, SubMsg, ReplyOn, to_json_binary,
 };
 
 use cw_ownable::{assert_owner, initialize_owner, is_owner};
@@ -7,7 +7,7 @@ use crate::{
     error::ContractError, 
     utils::{is_ok_cosmos_msg, assert_status, assert_registry, verify_nft_ownership}, 
     state::{KNOWN_TOKENS, PUBKEY, STATUS, MINT_CACHE, TOKEN_INFO, REGISTRY_ADDRESS, SERIAL}, 
-    msg::Status, 
+    msg::{Status, StargazeResult, StargazeResponse, StarCosmosMsg}, 
 };
 
 pub const MINT_REPLY_ID: u64 = 1;
@@ -16,14 +16,14 @@ pub const MINT_REPLY_ID: u64 = 1;
 pub fn try_execute(
     deps: Deps,
     sender: Addr,
-    msgs: Vec<CosmosMsg>
-) -> Result<Response, ContractError> {
+    msgs: Vec<StarCosmosMsg>
+) -> StargazeResult {
     assert_owner(deps.storage, &sender)?;
     assert_status(deps.storage)?;
     if !msgs.iter().all(is_ok_cosmos_msg) {
         return Err(ContractError::NotSupported {})
     }
-    Ok(Response::new().add_messages(msgs))
+    Ok(StargazeResponse::new().add_messages(msgs))
 }
 
 
@@ -33,13 +33,13 @@ pub fn try_mint_token(
     collection: String,
     msg: Binary,
     funds: Vec<Coin>
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     assert_owner(deps.storage, &sender)?;
     assert_status(deps.storage)?;
 
     MINT_CACHE.save(deps.storage, &collection)?;
     
-    Ok(Response::new().add_submessage(SubMsg {
+    Ok(StargazeResponse::new().add_submessage(SubMsg {
         msg: WasmMsg::Execute { 
             contract_addr: collection, 
             msg, 
@@ -55,7 +55,7 @@ pub fn try_mint_token(
 pub fn try_freeze(
     deps: DepsMut,
     sender: Addr
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     let token = TOKEN_INFO.load(deps.storage)?;
     let owner = cw_ownable::get_ownership(deps.storage)?.owner.unwrap();
 
@@ -76,7 +76,7 @@ pub fn try_freeze(
 
     STATUS.save(deps.storage, &Status { frozen: true })?;
 
-    Ok(Response::default()
+    Ok(StargazeResponse::default()
         .add_attribute("action", "freeze"
     ))
 }
@@ -84,7 +84,7 @@ pub fn try_freeze(
 
 pub fn try_unfreeze(
     deps: DepsMut,
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
 
     let owner = cw_ownable::get_ownership(deps.storage)?.owner.unwrap();
     let token = TOKEN_INFO.load(deps.storage)?;
@@ -95,7 +95,7 @@ pub fn try_unfreeze(
         token
     )?;
     
-    Ok(Response::default()
+    Ok(StargazeResponse::default()
         .add_attribute("action", "unfreeze"
     ))
 }
@@ -106,7 +106,7 @@ pub fn try_update_ownership(
     sender: Addr,
     new_owner: String,
     new_pubkey: Option<Binary>
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     assert_registry(deps.storage, &sender)?;
     initialize_owner(deps.storage, deps.api, Some(&new_owner))?;
 
@@ -116,7 +116,7 @@ pub fn try_update_ownership(
     }
 
     Ok(
-        Response::default()
+        StargazeResponse::default()
             .add_attribute("action", "update_ownership")
             .add_attribute("new_owner", new_owner.as_str())
     )
@@ -127,11 +127,11 @@ pub fn try_change_pubkey(
     deps: DepsMut,
     sender: Addr,
     pubkey: Binary
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     assert_owner(deps.storage, &sender)?;
     assert_status(deps.storage)?;
     PUBKEY.save(deps.storage, &pubkey)?;
-    Ok(Response::new()
+    Ok(StargazeResponse::new()
         .add_attributes(vec![
             ("action", "change_pubkey"),
             ("new_pubkey", pubkey.to_base64().as_str())
@@ -146,7 +146,7 @@ pub fn try_forget_tokens(
     sender: Addr, 
     collection: String,
     token_ids: Vec<String>
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     assert_owner(deps.storage, &sender)?;
     assert_status(deps.storage)?;
 
@@ -167,7 +167,7 @@ pub fn try_forget_tokens(
         );
     }
 
-    Ok(Response::new().add_attribute("action", "forget_tokens"))
+    Ok(StargazeResponse::new().add_attribute("action", "forget_tokens"))
 }
 
 
@@ -179,7 +179,7 @@ pub fn try_update_known_tokens(
     contract_addr: String,
     start_after: Option<String>,
     limit: Option<u32>
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     assert_status(deps.storage)?;
     if !is_owner(deps.storage, &sender)? 
         && env.contract.address != sender  {
@@ -202,7 +202,7 @@ pub fn try_update_known_tokens(
         )?;
     }
 
-    Ok(Response::new().add_attribute("action", "update_known_tokens"))
+    Ok(StargazeResponse::new().add_attribute("action", "update_known_tokens"))
 }
 
 
@@ -211,7 +211,7 @@ pub fn try_update_known_on_receive(
     deps: DepsMut,
     collection: String,
     token_id: String,
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     
     KNOWN_TOKENS.save(
         deps.storage, 
@@ -220,7 +220,7 @@ pub fn try_update_known_on_receive(
     )?;
 
     Ok(
-        Response::default()
+        StargazeResponse::default()
             .add_attribute("action", "update_known_on_receive")
     )
 }
@@ -232,7 +232,7 @@ pub fn try_transfer_token(
     token_id: String,
     recipient: String,
     funds: Vec<Coin>
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     assert_status(deps.storage)?;
     
     KNOWN_TOKENS.remove(
@@ -240,7 +240,7 @@ pub fn try_transfer_token(
         (collection.as_str(), token_id.as_str()),
     );
 
-    let msg : CosmosMsg = WasmMsg::Execute { 
+    let msg : StarCosmosMsg = WasmMsg::Execute { 
         contract_addr: collection, 
         msg: to_json_binary(&sg721_base::ExecuteMsg::TransferNft { 
             recipient, 
@@ -249,7 +249,7 @@ pub fn try_transfer_token(
         funds
     }.into();
 
-    Ok(Response::default()
+    Ok(StargazeResponse::default()
         .add_message(msg)
         .add_attribute("action", "transfer_token")
     )
@@ -264,7 +264,7 @@ pub fn try_send_token(
     contract: String,
     msg : Binary,
     funds: Vec<Coin>
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     assert_status(deps.storage)?;
     
     KNOWN_TOKENS.remove(
@@ -272,7 +272,7 @@ pub fn try_send_token(
         (collection.as_str(), token_id.as_str()),
     );
 
-    let msg : CosmosMsg = WasmMsg::Execute { 
+    let msg : StarCosmosMsg = WasmMsg::Execute { 
         contract_addr: collection, 
         msg: to_json_binary(&sg721_base::ExecuteMsg::SendNft { 
             contract, 
@@ -282,7 +282,7 @@ pub fn try_send_token(
         funds
     }.into();
 
-    Ok(Response::default()
+    Ok(StargazeResponse::default()
         .add_message(msg)
         .add_attribute("action", "send_token")
     )
@@ -293,7 +293,7 @@ pub fn try_send_token(
 pub fn try_purging(
     deps: DepsMut,
     sender: Addr
-) -> Result<Response, ContractError> {
+) -> StargazeResult {
     assert_registry(deps.storage, &sender)?;
     
     KNOWN_TOKENS.clear(deps.storage);
@@ -304,7 +304,7 @@ pub fn try_purging(
     PUBKEY.remove(deps.storage);
     STATUS.remove(deps.storage);
 
-    Ok(Response::default()
+    Ok(StargazeResponse::default()
         .add_attribute("action", "purge")
     )
 }

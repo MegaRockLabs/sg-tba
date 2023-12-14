@@ -5,19 +5,12 @@ use cw83::{registry_query, registry_execute,
     AccountQuery as AccountQueryBase,
     AccountInfoResponse as AccountInfoResponseBase,
 };
-use sg_tba::{MigrateAccountMsg, TokenInfo};
+use sg_tba::{MigrateAccountMsg, TokenInfo, RegistryParams};
 
 #[cw_serde]
 pub struct InstantiateMsg {
-    /// List of admins who can freeze/unfreeze token-bound accounts
-    /// and update allowed code ids
-    /// 
-    /// Meant to be used by other contracts such as marketplaces and
-    /// other services that hold tokens in eccrow
-    pub admins: Option<Vec<Addr>>,
 
-    /// List of allowed code ids that can be used to create token-bound accounts
-    pub allowed_ids: Vec<u64>,
+    pub params: RegistryParams
 }
 
 
@@ -124,12 +117,6 @@ pub struct MigrateMsg {}
 #[registry_execute]
 #[cw_serde]
 pub enum ExecuteMsg {
-
-    /// Update the list of allowed code ids that can be used to create token-bound accounts or migrate them
-    UpdateAllowedIds {
-        /// List of allowed code ids that can be used to create token-bound accounts
-        allowed_ids: Vec<u64>
-    },
 
     /// Update the owner of a token-bound account
     UpdateAccountOwnership {

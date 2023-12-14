@@ -17,7 +17,7 @@ use sg82_base::utils::verify_nft_ownership;
 use sg_tba::{TokenInfo, MigrateAccountMsg};
 
 use crate::{
-    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, ADMINS, ALLOWED_IDS},
+    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, PARAMS},
     helpers::construct_label, 
     error::ContractError
 };
@@ -38,7 +38,7 @@ pub fn create_account(
         return Err(ContractError::InvalidChainId {})
     }
 
-    if !ALLOWED_IDS.load(deps.storage)?.contains(&code_id) {
+    if !PARAMS.load(deps.storage)?.allowed_sg82_code_ids.contains(&code_id) {
         return Err(ContractError::InvalidCodeId {})
     }
 
@@ -119,7 +119,8 @@ pub fn update_account_owner(
     update_for: Option<Addr>
 ) -> Result<Response, ContractError> {
 
-    let is_admin = ADMINS.load(deps.storage)?.is_admin(sender.as_ref());
+    let is_manager = PARAMS.load(deps.storage)?.managers.contains(&sender.to_string());
+    
     let owner = update_for.unwrap_or(sender.clone());
 
     verify_nft_ownership(&deps.querier, owner.as_str(), token_info.clone())?;
@@ -130,7 +131,7 @@ pub fn update_account_owner(
     )?;
 
     // only admin can update ownership but only if the new address is the token owner
-    if owner != sender && !is_admin {
+    if owner != sender && !is_manager {
         return Err(ContractError::Unauthorized {})
     }
 
@@ -166,8 +167,8 @@ pub fn migrate_account(
     msg: MigrateAccountMsg
 ) -> Result<Response, ContractError> {
 
-    if !ALLOWED_IDS.load(deps.storage)?.contains(&new_code_id) {
-        return Err(ContractError::InvalidCodeId {});
+    if !PARAMS.load(deps.storage)?.allowed_sg82_code_ids.contains(&new_code_id) {
+        return Err(ContractError::InvalidCodeId {})
     }
 
     verify_nft_ownership(&deps.querier, sender.as_str(), token_info.clone())?;

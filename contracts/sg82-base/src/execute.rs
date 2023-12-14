@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    Deps, DepsMut, Env, CosmosMsg, Addr, Binary, WasmMsg, Coin, StdResult, SubMsg, ReplyOn, to_json_binary,
+    Deps, DepsMut, Env, Addr, Binary, WasmMsg, Coin, StdResult, SubMsg, ReplyOn, to_json_binary,
 };
 
 use cw_ownable::{assert_owner, initialize_owner, is_owner};

@@ -1,4 +1,4 @@
-use cosmwasm_std::{StdResult, Deps, Binary, Order, Env, CosmosMsg, from_json};
+use cosmwasm_std::{StdResult, Deps, Binary, Order, Env, from_json};
 use cw82::{CanExecuteResponse, ValidSignatureResponse, ValidSignaturesResponse};
 use k256::sha2::{Digest, Sha256};
 use cw_ownable::is_owner;

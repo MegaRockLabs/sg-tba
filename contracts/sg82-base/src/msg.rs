@@ -8,7 +8,7 @@ pub use cw82::{
     ValidSignaturesResponse
 };
 use cw_ownable::cw_ownable_query;
-use sg_std::{StargazeMsg, StargazeMsgWrapper};
+use sg_std::StargazeMsgWrapper;
 use sg_tba::TokenInfo;
 
 use crate::error::ContractError;

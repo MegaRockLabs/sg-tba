@@ -8,7 +8,7 @@ use cw82::Cw82Contract;
 use cw83::CREATE_ACCOUNT_REPLY_ID;
 
 use crate::{
-    state::{LAST_ATTEMPTING, ALLOWED_IDS, TOKEN_ADDRESSES, ADMINS, AdminList, COL_TOKEN_COUNTS},
+    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, COL_TOKEN_COUNTS, PARAMS},
     msg::{InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg}, 
     execute::{create_account, update_account_owner, migrate_account}, 
     query::{account_info, accounts, collections, collection_accounts}, 
@@ -20,7 +20,7 @@ pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : InstantiateMsg) 
+pub fn instantiate(deps: DepsMut, _ : Env, _ : MessageInfo, msg : InstantiateMsg) 
 -> Result<Response, ContractError> {
     cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     cw22::set_contract_supported_interface(
@@ -33,18 +33,11 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
         ]
     )?;
 
-    let admins = msg.admins.unwrap_or(vec![info.sender]);
-    let admins_str_list = admins.iter().map(|a| a.to_string()).collect::<Vec<String>>().join(", ");
-    let ids_str_list = msg.allowed_ids.iter().map(|a| a.to_string()).collect::<Vec<String>>().join(", ");
-
-    ADMINS.save(deps.storage, &AdminList { admins })?;
-    ALLOWED_IDS.save(deps.storage, &msg.allowed_ids)?;
+    PARAMS.save(deps.storage, &msg.params)?;
 
     Ok(Response::new()
         .add_attributes(vec![
             ("action", "instantiate"),
-            ("admins", admins_str_list.as_str()),
-            ("allowed_ids", ids_str_list.as_str()),
         ])
     )
 }
@@ -88,16 +81,6 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
             new_code_id,
             msg
         } => migrate_account(deps, info.sender, token_info, new_code_id, msg),
-        
-        ExecuteMsg::UpdateAllowedIds { 
-            allowed_ids 
-        } => {
-            if !ADMINS.load(deps.storage)?.is_admin(info.sender.as_ref()) {
-                return Err(ContractError::Unauthorized {})
-            }
-            ALLOWED_IDS.save(deps.storage, &allowed_ids)?;
-            Ok(Response::default())
-        },
 
         ExecuteMsg::UpdateAccountOwnership { 
             token_info, 

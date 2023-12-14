@@ -458,6 +458,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmwasm-storage"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd2b4ae72a03e8f56c85df59d172d51d2d7dc9cec6e2bc811e3fb60c588032a4"
+dependencies = [
+ "cosmwasm-std",
+ "serde",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -893,7 +903,7 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
- "sg-std",
+ "sg-std 3.2.0",
  "sg-tba",
  "sg721",
  "sg721-base",
@@ -2304,6 +2314,21 @@ dependencies = [
 
 [[package]]
 name = "sg-std"
+version = "2.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc9b4ab6090f777940d3277632b1a3fff89f5a52191443a19da7cd99e3845041"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-utils 0.16.0",
+ "cw721 0.16.0",
+ "schemars",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "sg-std"
 version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4db53aebc2b4f981dc20a51213544adde8beaace6880345627f4babe2e1bc3ab"
@@ -2356,7 +2381,7 @@ dependencies = [
  "cw721 0.18.0",
  "cw721-base 0.18.0",
  "serde",
- "sg-std",
+ "sg-std 3.2.0",
  "sg721",
  "thiserror",
  "url",
@@ -2378,7 +2403,7 @@ dependencies = [
  "cw83",
  "k256 0.13.2",
  "semver",
- "sg-std",
+ "sg-std 3.2.0",
  "sg-tba",
  "sg721-base",
  "sha2 0.10.8",
@@ -2402,6 +2427,7 @@ dependencies = [
  "sg-tba",
  "sg721-base",
  "sg82-base",
+ "stargaze-fair-burn",
  "thiserror",
 ]
 
@@ -2523,6 +2549,24 @@ checksum = "d91ed6c858b01f942cd56b37a94b3e0a1798290327d1236e4d9cf4eaca44d29d"
 dependencies = [
  "base64ct",
  "der 0.7.8",
+]
+
+[[package]]
+name = "stargaze-fair-burn"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f46c24f9363c6212d943495a7bd6f17cbdfc2a15e8f05c23a24616f8f8d7e198"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw-storage-plus 0.16.0",
+ "cw-utils 0.16.0",
+ "cw2 0.16.0",
+ "schemars",
+ "serde",
+ "sg-std 2.4.0",
+ "thiserror",
 ]
 
 [[package]]

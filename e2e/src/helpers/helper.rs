@@ -10,7 +10,7 @@ use cosm_tome::chain::request::TxOptions;
 use cosm_tome::modules::bank::model::SendRequest;
 use cosmrs::crypto::secp256k1;
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Timestamp, Empty, CosmosMsg, WasmMsg, Binary, to_json_binary, from_json};
+use cosmwasm_std::{Timestamp, Empty, CosmosMsg, WasmMsg, Binary, to_json_binary, from_json, Coin};
 
 use cw1::CanExecuteResponse;
 use sg82_base::msg::QueryMsg;
@@ -26,10 +26,10 @@ pub const REGISTRY_NAME     : &str = "sg83_base";
 pub const ACOUNT_NAME       : &str = "sg82_base";
 pub const PROXY_NAME        : &str = "cw1_whitelist";
 
-
 pub const MAX_TOKENS: u32 = 10_000;
-pub const CREATION_FEE: u128 = 1_000_000_000;
+pub const CREATION_FEE: u128 = 100_000_000;
 pub const MINT_PRICE: u128 = 100_000_000;
+
 
 pub fn instantiate_registry(
     chain: &mut Chain,
@@ -43,8 +43,16 @@ pub fn instantiate_registry(
         REGISTRY_NAME,
         "registry_instantiate",
         &InstantiateMsg {
-            allowed_ids: vec![account_id],
-            admins: None,
+
+            params: sg_tba::RegistryParams {
+                allowed_sg82_code_ids: vec![account_id],
+                creation_fee: Coin {
+                    denom: chain.cfg.orc_cfg.chain_cfg.denom.clone(),
+                    amount: CREATION_FEE.into(),
+                },
+                managers: vec![],
+                extension: Empty {},
+            }
         },
         key,
         Some(creator_addr.parse().unwrap()),

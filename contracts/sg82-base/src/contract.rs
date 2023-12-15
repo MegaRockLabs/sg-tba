@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Reply, StdError, to_json_binary,
+    Binary, Deps, DepsMut, Env, MessageInfo, StdResult, Reply, StdError, to_json_binary,
 };
 use cw_ownable::{get_ownership, initialize_owner};
 
@@ -7,10 +7,11 @@ use cw_ownable::{get_ownership, initialize_owner};
 use cosmwasm_std::entry_point;
 
 use sg_tba::{MigrateAccountMsg, TokenInfo};
+use sg_std::Response;
 
 use crate::{
     state::{REGISTRY_ADDRESS, TOKEN_INFO, PUBKEY, STATUS, MINT_CACHE, SERIAL}, 
-    msg::{QueryMsg, InstantiateMsg, ExecuteMsg, Status, StargazeResult}, 
+    msg::{QueryMsg, InstantiateMsg, ExecuteMsg, Status}, 
     error::ContractError, 
     query::{can_execute, valid_signature, valid_signatures, known_tokens, assets, full_info}, 
     execute::{
@@ -84,7 +85,7 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg) 
--> StargazeResult {
+-> Result<Response, ContractError> {
 
     if !REGISTRY_ADDRESS.exists(deps.storage) {
         return Err(ContractError::Deleted {})
@@ -206,7 +207,7 @@ pub fn migrate(deps: DepsMut, _: Env, _: MigrateAccountMsg) -> StdResult<Respons
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StargazeResult {
+pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> Result<Response, ContractError> {
     match msg.id {
         MINT_REPLY_ID => {
             let collection = MINT_CACHE.load(deps.storage)?;

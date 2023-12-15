@@ -2,12 +2,13 @@ use cosmwasm_std::{StdResult, Deps, Binary, Order, Env, from_json};
 use cw82::{CanExecuteResponse, ValidSignatureResponse, ValidSignaturesResponse};
 use k256::sha2::{Digest, Sha256};
 use cw_ownable::is_owner;
+use sg_std::CosmosMsg;
 use sg_tba::TokenInfo;
 
 use crate::{
     state::{PUBKEY, KNOWN_TOKENS, TOKEN_INFO, STATUS, REGISTRY_ADDRESS}, 
     utils::{generate_amino_transaction_string, parse_payload, is_ok_cosmos_msg, status_ok, assert_status}, 
-    msg::{AssetsResponse, FullInfoResponse, StarCosmosMsg}
+    msg::{AssetsResponse, FullInfoResponse}
 };
 
 
@@ -17,7 +18,7 @@ const DEFAULT_BATCH_SIZE : u32 = 100;
 pub fn can_execute(
     deps: Deps,
     sender: String,
-    msg: &StarCosmosMsg
+    msg: &CosmosMsg
 ) -> StdResult<CanExecuteResponse> {
 
     let cant = CanExecuteResponse { can_execute: false };

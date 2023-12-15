@@ -30,6 +30,7 @@ cw82                = { workspace = true }
 cw83                = { workspace = true }
 cw22                = { workspace = true }
 cw721               = { workspace = true }
+sg-std              = { workspace = true }
 sg-tba              = { workspace = true }
 sg82-base           = { workspace = true, features = ["library"] }
 sg721-base          = { workspace = true, features = ["library"] }

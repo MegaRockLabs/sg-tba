@@ -1,15 +1,33 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Binary, Empty, Addr};
+use cosmwasm_std::{Binary, Empty, Addr, Api, StdResult};
 use cw83::{registry_query, registry_execute, 
     CreateAccountMsg as CreateAccountMsgBase,
     AccountQuery as AccountQueryBase,
     AccountInfoResponse as AccountInfoResponseBase,
 };
-use sg_tba::{MigrateAccountMsg, TokenInfo, RegistryParams};
+use sg_tba::{MigrateAccountMsg, TokenInfo, RegistryParams as ParamsBase};
+
+
+#[cw_serde]
+pub struct FairBurnInfo {
+    pub fair_burn_addr: Addr,
+    pub developer_addr: Addr,
+}
+
+impl FairBurnInfo {
+    pub fn is_ok(&self, api: &dyn Api) -> StdResult<()> {
+        api.addr_validate(self.fair_burn_addr.as_str())?;
+        api.addr_validate(self.developer_addr.as_str())?;
+        Ok(())
+    }
+}
+
+
+pub type RegistryParams = ParamsBase<FairBurnInfo>;
+
 
 #[cw_serde]
 pub struct InstantiateMsg {
-
     pub params: RegistryParams
 }
 
@@ -141,4 +159,10 @@ pub enum ExecuteMsg {
         msg: MigrateAccountMsg
     }
 
+}
+
+
+#[cw_serde]
+pub enum SudoMsg {
+    UpdateParams(Box<RegistryParams>),
 }

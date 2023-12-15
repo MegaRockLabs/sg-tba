@@ -1,18 +1,19 @@
 use cosmwasm_std::{
-    to_json_binary, DepsMut, Deps, Env, MessageInfo, Response, Reply, StdResult, Binary
+    to_json_binary, DepsMut, Deps, Env, MessageInfo, Reply, StdResult, Binary
 };
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 
 use cw82::Cw82Contract;
 use cw83::CREATE_ACCOUNT_REPLY_ID;
+use sg_std::Response;
 
 use crate::{
-    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, COL_TOKEN_COUNTS, PARAMS},
-    msg::{InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg}, 
+    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, COL_TOKEN_COUNTS, SUDO_PARAMS},
+    msg::{InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, SudoMsg}, 
     execute::{create_account, update_account_owner, migrate_account}, 
     query::{account_info, accounts, collections, collection_accounts}, 
-    error::ContractError, 
+    error::ContractError, sudo::sudo_update_params, 
 };
 
 pub const CONTRACT_NAME: &str = "crates:sg83-tba-registry";
@@ -22,6 +23,8 @@ pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(deps: DepsMut, _ : Env, _ : MessageInfo, msg : InstantiateMsg) 
 -> Result<Response, ContractError> {
+    msg.params.extension.is_ok(deps.api)?;
+
     cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     cw22::set_contract_supported_interface(
         deps.storage, 
@@ -33,7 +36,7 @@ pub fn instantiate(deps: DepsMut, _ : Env, _ : MessageInfo, msg : InstantiateMsg
         ]
     )?;
 
-    PARAMS.save(deps.storage, &msg.params)?;
+    SUDO_PARAMS.save(deps.storage, &msg.params)?;
 
     Ok(Response::new()
         .add_attributes(vec![
@@ -53,12 +56,11 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
         ) => create_account(
             deps, 
             env,
-            info.sender.to_string(),
+            info,
             create.chain_id,
             create.code_id, 
             create.msg.token_info, 
             create.msg.pubkey,
-            info.funds,
             false
         ),
 
@@ -67,12 +69,11 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
         ) => create_account(
             deps, 
             env,
-            info.sender.to_string(),
+            info,
             create.chain_id,
             create.code_id, 
             create.msg.token_info, 
             create.msg.pubkey,
-            info.funds,
             true
         ),
 
@@ -95,6 +96,7 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
             update_for
         )
     }
+
 }
 
 
@@ -173,6 +175,15 @@ pub fn query(deps: Deps, _ : Env, msg: QueryMsg) -> StdResult<Binary> {
         )?)
     }
 }
+
+
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn sudo(deps: DepsMut, _: Env, msg: SudoMsg) -> Result<Response, ContractError> {
+    match msg {
+        SudoMsg::UpdateParams(params_msg) => sudo_update_params(deps, *params_msg),
+    }
+}
+
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_: DepsMut, _: Env, _: MigrateMsg) -> StdResult<Response> {

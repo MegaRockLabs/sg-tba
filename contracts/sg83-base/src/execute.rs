@@ -1,5 +1,4 @@
 use cosmwasm_std::{
-    Response, 
     Env, 
     Binary, 
     DepsMut, 
@@ -7,30 +6,30 @@ use cosmwasm_std::{
     SubMsg, 
     ReplyOn, 
     WasmMsg, 
-    CosmosMsg, 
     Addr,
+    MessageInfo, 
     to_json_binary, 
 };
 
 use cw83::CREATE_ACCOUNT_REPLY_ID;
 use sg82_base::utils::verify_nft_ownership;
+use sg_std::{Response, CosmosMsg};
 use sg_tba::{TokenInfo, MigrateAccountMsg};
 
 use crate::{
-    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, PARAMS},
-    helpers::construct_label, 
-    error::ContractError
+    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, SUDO_PARAMS},
+    registry::construct_label, 
+    error::ContractError, utils::fair_split
 };
 
 pub fn create_account(
     deps: DepsMut,
     env: Env,
-    sender: String,
+    info: MessageInfo,
     chain_id: String,
     code_id: u64,
     token_info: TokenInfo,
     pubkey: Binary,
-    funds: Vec<Coin>,
     reset: bool
 ) -> Result<Response, ContractError> {
 
@@ -38,11 +37,11 @@ pub fn create_account(
         return Err(ContractError::InvalidChainId {})
     }
 
-    if !PARAMS.load(deps.storage)?.allowed_sg82_code_ids.contains(&code_id) {
+    if !SUDO_PARAMS.load(deps.storage)?.allowed_sg82_code_ids.contains(&code_id) {
         return Err(ContractError::InvalidCodeId {})
     }
 
-    verify_nft_ownership(&deps.querier, &sender, token_info.clone())?;
+    verify_nft_ownership(&deps.querier, info.sender.as_str(), token_info.clone())?;
 
 
     let mut res = Response::default()
@@ -52,10 +51,11 @@ pub fn create_account(
             ("token_id", token_info.id.as_str()),
             ("code_id", code_id.to_string().as_str()),
             ("chain_id", chain_id.as_str()),
-            ("owner", sender.as_str())
+            ("owner", info.sender.as_str())
         ]); 
 
     
+
     let token_address = TOKEN_ADDRESSES.may_load(
         deps.storage, 
         (token_info.collection.as_str(), token_info.id.as_str())
@@ -81,14 +81,33 @@ pub fn create_account(
         label = construct_label(&token_info, None);
     }
 
+
     LAST_ATTEMPTING.save(deps.storage, &token_info)?;
 
+
     let init_msg = sg82_base::msg::InstantiateMsg {
-        owner: sender.clone(),
+        owner: info.sender.to_string(),
         token_contract: token_info.collection.clone(),
         token_id: token_info.id.clone(),
         pubkey
     };
+
+
+    let fb_info = SUDO_PARAMS.load(deps.storage)?.extension;
+
+    let (
+        fair_burn_funds, 
+        acc_forwards_funds
+    ) = fair_split(deps.storage, &info)?;
+
+
+    res = stargaze_fair_burn::append_fair_burn_msg(
+        &fb_info.fair_burn_addr, 
+        fair_burn_funds, 
+        Some(&fb_info.developer_addr), 
+        res
+    );
+
 
     Ok(res
        .add_submessage(SubMsg {
@@ -99,7 +118,7 @@ pub fn create_account(
                     code_id, 
                     msg: to_json_binary(&init_msg)?, 
                     label,
-                    funds
+                    funds: acc_forwards_funds
                 }
             ),
             reply_on: ReplyOn::Success,
@@ -119,7 +138,7 @@ pub fn update_account_owner(
     update_for: Option<Addr>
 ) -> Result<Response, ContractError> {
 
-    let is_manager = PARAMS.load(deps.storage)?.managers.contains(&sender.to_string());
+    let is_manager = SUDO_PARAMS.load(deps.storage)?.managers.contains(&sender.to_string());
     
     let owner = update_for.unwrap_or(sender.clone());
 
@@ -167,7 +186,7 @@ pub fn migrate_account(
     msg: MigrateAccountMsg
 ) -> Result<Response, ContractError> {
 
-    if !PARAMS.load(deps.storage)?.allowed_sg82_code_ids.contains(&new_code_id) {
+    if !SUDO_PARAMS.load(deps.storage)?.allowed_sg82_code_ids.contains(&new_code_id) {
         return Err(ContractError::InvalidCodeId {})
     }
 

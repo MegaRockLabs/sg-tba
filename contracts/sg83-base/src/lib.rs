@@ -1,7 +1,9 @@
 pub mod contract;
-mod execute;
+pub mod execute;
 pub mod msg;
-pub mod helpers;
-mod error;
+pub mod registry;
+pub mod query;
+pub mod error;
+pub mod sudo;
 mod state;
-mod query;
+mod utils;

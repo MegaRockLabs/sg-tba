@@ -1,11 +1,26 @@
 use cosmwasm_std::StdError;
-use cw_utils::ParseReplyError;
+use cw_utils::{ParseReplyError, PaymentError};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ContractError {
     #[error("{0}")]
     Std(#[from] StdError),
+
+    #[error("{0}")]
+    Payment(#[from] PaymentError),
+
+    #[error("Insufficient fee: expected {0}, got {1}")]
+    InsufficientFee(u128, u128),
+
+    #[error("None of the sent tokens are accepted by the contract")]
+    NoFeeTokens {},
+
+    #[error("Code ids are invalid or not provided")]
+    InvalidCodeIds {},
+
+    #[error("Must provide at least one correct creating fee")]
+    InvalidCreationFees {},
 
     #[error("Unauthorized")]
     Unauthorized {},

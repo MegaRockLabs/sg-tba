@@ -10,11 +10,11 @@ use cosm_tome::chain::request::TxOptions;
 use cosm_tome::modules::bank::model::SendRequest;
 use cosmrs::crypto::secp256k1;
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Timestamp, Empty, CosmosMsg, WasmMsg, Binary, to_json_binary, from_json, Coin};
+use cosmwasm_std::{Timestamp, Empty, CosmosMsg, WasmMsg, Binary, to_json_binary, from_json, Coin, Addr};
 
 use cw1::CanExecuteResponse;
 use sg82_base::msg::QueryMsg;
-use sg83_base::msg::{InstantiateMsg, CreateAccountMsg};
+use sg83_base::msg::{InstantiateMsg, CreateAccountMsg, FairBurnInfo};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use sg_std::StargazeMsgWrapper;
@@ -46,13 +46,16 @@ pub fn instantiate_registry(
 
             params: sg_tba::RegistryParams {
                 allowed_sg82_code_ids: vec![account_id],
-                creation_fee: Coin {
+                creation_fees: vec![Coin {
                     denom: chain.cfg.orc_cfg.chain_cfg.denom.clone(),
                     amount: CREATION_FEE.into(),
-                },
+                }],
                 managers: vec![],
-                extension: Empty {},
-            }
+                extension: FairBurnInfo {
+                    developer_addr: Addr::unchecked(creator_addr.clone()),
+                    fair_burn_addr: Addr::unchecked(creator_addr.clone())
+                },
+            },
         },
         key,
         Some(creator_addr.parse().unwrap()),

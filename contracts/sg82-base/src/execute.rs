@@ -14,7 +14,7 @@ use crate::{
 pub const MINT_REPLY_ID: u64 = 1;
 
 
-pub fn try_execute(
+pub fn try_executing(
     deps: Deps,
     sender: Addr,
     msgs: Vec<CosmosMsg>
@@ -28,7 +28,7 @@ pub fn try_execute(
 }
 
 
-pub fn try_mint_token(
+pub fn try_minting_token(
     deps: DepsMut,
     sender: Addr,
     collection: String,
@@ -53,7 +53,7 @@ pub fn try_mint_token(
 }
 
 
-pub fn try_freeze(
+pub fn try_freezing(
     deps: DepsMut,
     sender: Addr
 ) -> Result<Response, ContractError> {
@@ -83,7 +83,7 @@ pub fn try_freeze(
 }
 
 
-pub fn try_unfreeze(
+pub fn try_unfreezing(
     deps: DepsMut,
 ) -> Result<Response, ContractError> {
 
@@ -102,7 +102,7 @@ pub fn try_unfreeze(
 }
 
 
-pub fn try_update_ownership(
+pub fn try_updating_ownership(
     deps: DepsMut,
     sender: Addr,
     new_owner: String,
@@ -123,7 +123,7 @@ pub fn try_update_ownership(
 }
 
 
-pub fn try_change_pubkey(
+pub fn try_changing_pubkey(
     deps: DepsMut,
     sender: Addr,
     pubkey: Binary
@@ -141,7 +141,7 @@ pub fn try_change_pubkey(
 
 
 
-pub fn try_forget_tokens(
+pub fn try_forgeting_tokens(
     deps: DepsMut,
     sender: Addr, 
     collection: String,
@@ -172,7 +172,7 @@ pub fn try_forget_tokens(
 
 
 
-pub fn try_update_known_tokens(
+pub fn try_updating_known_tokens(
     deps: DepsMut,
     env: Env,
     sender: Addr,
@@ -207,7 +207,7 @@ pub fn try_update_known_tokens(
 
 
 
-pub fn try_update_known_on_receive(
+pub fn try_updating_known_on_receive(
     deps: DepsMut,
     collection: String,
     token_id: String,
@@ -230,7 +230,7 @@ pub fn try_update_known_on_receive(
 }
 
 
-pub fn try_transfer_token(
+pub fn try_transfering_token(
     deps: DepsMut,
     collection: String,
     token_id: String,
@@ -261,7 +261,7 @@ pub fn try_transfer_token(
 
 
 
-pub fn try_send_token(
+pub fn try_sending_token(
     deps: DepsMut,
     collection: String,
     token_id: String,
@@ -299,7 +299,7 @@ pub fn try_purging(
     sender: Addr
 ) -> Result<Response, ContractError> {
     assert_registry(deps.storage, &sender)?;
-    
+
     KNOWN_TOKENS.clear(deps.storage);
     REGISTRY_ADDRESS.remove(deps.storage);
     MINT_CACHE.remove(deps.storage);

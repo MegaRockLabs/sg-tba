@@ -15,17 +15,17 @@ use crate::{
     error::ContractError, 
     query::{can_execute, valid_signature, valid_signatures, known_tokens, assets, full_info}, 
     execute::{
-        try_execute, 
-        try_update_ownership, 
-        try_update_known_tokens, 
-        try_forget_tokens, 
-        try_update_known_on_receive, 
-        try_transfer_token, 
-        try_send_token, 
-        try_freeze, 
-        try_unfreeze, 
-        try_change_pubkey, 
-        try_mint_token, 
+        try_executing, 
+        try_updating_ownership, 
+        try_updating_known_tokens, 
+        try_forgeting_tokens, 
+        try_updating_known_on_receive, 
+        try_transfering_token, 
+        try_sending_token, 
+        try_freezing, 
+        try_unfreezing, 
+        try_changing_pubkey, 
+        try_minting_token, 
         try_purging,
         MINT_REPLY_ID
     }, 
@@ -93,32 +93,32 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
     SERIAL.update(deps.storage, |s| Ok::<u128, StdError>(s + 1))?;
 
     match msg {
-        ExecuteMsg::Execute { msgs } => try_execute(deps.as_ref(), info.sender, msgs),
+        ExecuteMsg::Execute { msgs } => try_executing(deps.as_ref(), info.sender, msgs),
 
         ExecuteMsg::MintToken { 
             minter: 
             collection, 
             msg 
-        } => try_mint_token(deps, info.sender, collection, msg, info.funds),
+        } => try_minting_token(deps, info.sender, collection, msg, info.funds),
         
         ExecuteMsg::TransferToken { 
             collection, 
             token_id, 
             recipient 
-        } => try_transfer_token(deps, collection, token_id, recipient, info.funds),
+        } => try_transfering_token(deps, collection, token_id, recipient, info.funds),
 
         ExecuteMsg::SendToken { 
             collection, 
             token_id, 
             contract, 
             msg 
-        } => try_send_token(deps, collection, token_id, contract, msg, info.funds),
+        } => try_sending_token(deps, collection, token_id, contract, msg, info.funds),
 
         ExecuteMsg::UpdateKnownTokens { 
             collection, 
             start_after, 
             limit 
-        } => try_update_known_tokens(
+        } => try_updating_known_tokens(
             deps, 
             env, 
             info.sender, 
@@ -127,25 +127,25 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
             limit
         ),
 
-        ExecuteMsg::Freeze {} => try_freeze(deps, info.sender),
+        ExecuteMsg::Freeze {} => try_freezing(deps, info.sender),
         
-        ExecuteMsg::Unfreeze {} => try_unfreeze(deps),
+        ExecuteMsg::Unfreeze {} => try_unfreezing(deps),
 
         ExecuteMsg::ForgetTokens { 
             collection, 
             token_ids 
-        } => try_forget_tokens(deps, info.sender, collection, token_ids),
+        } => try_forgeting_tokens(deps, info.sender, collection, token_ids),
 
         ExecuteMsg::ReceiveNft(
             msg
-        ) => try_update_known_on_receive(deps, info.sender.to_string(), msg.token_id),
+        ) => try_updating_known_on_receive(deps, info.sender.to_string(), msg.token_id),
         
         ExecuteMsg::UpdateOwnership { 
             new_owner, 
             new_pubkey 
-        } => try_update_ownership(deps, info.sender, new_owner, new_pubkey),
+        } => try_updating_ownership(deps, info.sender, new_owner, new_pubkey),
 
-        ExecuteMsg::UpdatePubkey { new_pubkey } => try_change_pubkey(deps, info.sender, new_pubkey),
+        ExecuteMsg::UpdatePubkey { new_pubkey } => try_changing_pubkey(deps, info.sender, new_pubkey),
 
         ExecuteMsg::Purge {} => try_purging(deps, info.sender),
     }
@@ -214,7 +214,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> Result<Response, ContractEr
             MINT_CACHE.remove(deps.storage);
 
             // query all the held tokens for the collection stored in CACHE
-            try_update_known_tokens(
+            try_updating_known_tokens(
                 deps, 
                 env.clone(), 
                 env.contract.address, 

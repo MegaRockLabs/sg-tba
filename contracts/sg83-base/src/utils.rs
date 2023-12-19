@@ -1,6 +1,7 @@
-use cosmwasm_std::{Coin, Storage, MessageInfo, ensure, Api};
+use cosmwasm_std::{Coin, Storage, MessageInfo, ensure};
 use cw_utils::{must_pay, PaymentError};
-use crate::{error::ContractError, state::SUDO_PARAMS, msg::RegistryParams};
+use sg_tba::RegistryParams;
+use crate::{error::ContractError, state::SUDO_PARAMS};
 
 
 
@@ -51,13 +52,9 @@ pub fn fair_split(
 
 pub fn validate_params(
     params: &RegistryParams,
-    api: &dyn Api,
 ) -> Result<(), ContractError> {
     ensure!(!params.allowed_sg82_code_ids.is_empty(), ContractError::InvalidCodeIds {});
     ensure!(!params.creation_fees.is_empty(), ContractError::InvalidCreationFees {});
     ensure!(!params.creation_fees.iter().any(|c| c.amount.is_zero()), ContractError::InvalidCreationFees {});
-
-    params.extension.is_ok(api)?;
-
     Ok(())
 }

@@ -51,10 +51,11 @@ pub fn instantiate_registry(
                     amount: CREATION_FEE.into(),
                 }],
                 managers: vec![],
-                extension: FairBurnInfo {
-                    developer_addr: Addr::unchecked(creator_addr.clone()),
-                    fair_burn_addr: Addr::unchecked(creator_addr.clone())
-                },
+                extension: Empty {}
+            },
+            fee_burn_info: FairBurnInfo {
+                developer_addr: Addr::unchecked(creator_addr.clone()),
+                fair_burn_addr: Addr::unchecked(creator_addr.clone())
             },
         },
         key,

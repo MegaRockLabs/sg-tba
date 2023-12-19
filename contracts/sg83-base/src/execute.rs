@@ -17,7 +17,7 @@ use sg_std::{Response, CosmosMsg};
 use sg_tba::{TokenInfo, MigrateAccountMsg};
 
 use crate::{
-    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, SUDO_PARAMS},
+    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, SUDO_PARAMS, FAIR_BURN_INFO},
     registry::construct_label, 
     error::ContractError, utils::fair_split
 };
@@ -43,7 +43,6 @@ pub fn create_account(
 
     verify_nft_ownership(&deps.querier, info.sender.as_str(), token_info.clone())?;
 
-
     let mut res = Response::default()
         .add_attributes(vec![
             ("action",  if reset { "reset_account" } else { "create_account" }),
@@ -53,8 +52,6 @@ pub fn create_account(
             ("chain_id", chain_id.as_str()),
             ("owner", info.sender.as_str())
         ]); 
-
-    
 
     let token_address = TOKEN_ADDRESSES.may_load(
         deps.storage, 
@@ -93,12 +90,13 @@ pub fn create_account(
     };
 
 
-    let fb_info = SUDO_PARAMS.load(deps.storage)?.extension;
+    let fb_info = FAIR_BURN_INFO.load(deps.storage)?;
 
     let (
         fair_burn_funds, 
         acc_forwards_funds
     ) = fair_split(deps.storage, &info)?;
+
 
 
     res = stargaze_fair_burn::append_fair_burn_msg(

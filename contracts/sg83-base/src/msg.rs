@@ -5,7 +5,7 @@ use cw83::{registry_query, registry_execute,
     AccountQuery as AccountQueryBase,
     AccountInfoResponse as AccountInfoResponseBase,
 };
-use sg_tba::{MigrateAccountMsg, TokenInfo, RegistryParams as ParamsBase};
+use sg_tba::{MigrateAccountMsg, TokenInfo, RegistryParams};
 
 
 #[cw_serde]
@@ -23,11 +23,9 @@ impl FairBurnInfo {
 }
 
 
-pub type RegistryParams = ParamsBase<FairBurnInfo>;
-
-
 #[cw_serde]
 pub struct InstantiateMsg {
+    pub fee_burn_info: FairBurnInfo,
     pub params: RegistryParams
 }
 
@@ -126,6 +124,10 @@ pub enum QueryMsg {
         /// Limit how many collections to return
         limit: Option<u32>
     },
+
+    /// Query params of the registry
+    #[returns(RegistryParams)]
+    RegistryParams {},
 }
 
 #[cw_serde]
@@ -164,5 +166,18 @@ pub enum ExecuteMsg {
 
 #[cw_serde]
 pub enum SudoMsg {
+    /// updating the entire registry params object
     UpdateParams(Box<RegistryParams>),
+    /// updating an address that is used for fair fee burning
+    UpdateFairBurnAddress(String),
+    /// updating the list of code ids that are allowed for account creation & migration
+    UpdateAllowedCodeIds {
+        code_ids: Vec<u64>
+    },
+    /// manager contracts that can update an owner for an account if the latter is the new holder of the bound NFT
+    UpdateManagers {
+        managers: Vec<String>
+    },
+
+
 }

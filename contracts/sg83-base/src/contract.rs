@@ -11,9 +11,10 @@ use sg_std::Response;
 use crate::{
     state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, COL_TOKEN_COUNTS, SUDO_PARAMS},
     msg::{InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, SudoMsg}, 
+    sudo::{sudo_update_params, sudo_update_fair_burn_address, sudo_update_allowed_sg82_code_ids, sudo_update_managers}, 
     execute::{create_account, update_account_owner, migrate_account}, 
     query::{account_info, accounts, collections, collection_accounts}, 
-    error::ContractError, sudo::sudo_update_params, 
+    error::ContractError, 
 };
 
 pub const CONTRACT_NAME: &str = "crates:sg83-tba-registry";
@@ -23,7 +24,7 @@ pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(deps: DepsMut, _ : Env, _ : MessageInfo, msg : InstantiateMsg) 
 -> Result<Response, ContractError> {
-    msg.params.extension.is_ok(deps.api)?;
+    msg.fee_burn_info.is_ok(deps.api)?;
 
     cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     cw22::set_contract_supported_interface(
@@ -115,7 +116,6 @@ pub fn reply(deps: DepsMut, _ : Env, msg : Reply)
         let stored = LAST_ATTEMPTING.load(deps.storage)?;
         LAST_ATTEMPTING.remove(deps.storage);
 
-
         COL_TOKEN_COUNTS.update(
             deps.storage, 
             stored.collection.as_str(), 
@@ -172,7 +172,9 @@ pub fn query(deps: Deps, _ : Env, msg: QueryMsg) -> StdResult<Binary> {
             &collection,
             skip,
             limit
-        )?)
+        )?),
+        
+        QueryMsg::RegistryParams {} => to_json_binary(&SUDO_PARAMS.load(deps.storage)?)
     }
 }
 
@@ -181,11 +183,13 @@ pub fn query(deps: Deps, _ : Env, msg: QueryMsg) -> StdResult<Binary> {
 pub fn sudo(deps: DepsMut, _: Env, msg: SudoMsg) -> Result<Response, ContractError> {
     match msg {
         SudoMsg::UpdateParams(params_msg) => sudo_update_params(deps, *params_msg),
+        SudoMsg::UpdateFairBurnAddress(address) => sudo_update_fair_burn_address(deps, address),
+        SudoMsg::UpdateAllowedCodeIds { code_ids } => sudo_update_allowed_sg82_code_ids(deps, code_ids),
+        SudoMsg::UpdateManagers { managers } => sudo_update_managers(deps, managers)
     }
 }
 
-
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_: DepsMut, _: Env, _: MigrateMsg) -> StdResult<Response> {
-    Ok(Response::default())
+    Ok(Response::default().add_attribute("action", "migrate"))
 }

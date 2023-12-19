@@ -219,9 +219,13 @@ pub fn try_update_known_on_receive(
         &true
     )?;
 
-    Ok(
-        Response::default()
-            .add_attribute("action", "update_known_on_receive")
+
+    Ok(Response::default()
+        .add_attributes(vec![
+            ("action", "update_known_on_receive"),
+            ("collection", collection.as_str()),
+            ("token_id", token_id.as_str())
+        ])
     )
 }
 

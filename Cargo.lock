@@ -2348,7 +2348,12 @@ version = "1.0.2"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw721 0.18.0",
+ "cw82",
+ "cw83",
  "schemars",
+ "sg-std 2.4.0",
+ "sg721-base",
 ]
 
 [[package]]
@@ -2391,6 +2396,7 @@ dependencies = [
 name = "sg82-base"
 version = "1.0.2"
 dependencies = [
+ "bech32",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-ownable",
@@ -2402,6 +2408,7 @@ dependencies = [
  "cw82",
  "cw83",
  "k256 0.13.2",
+ "ripemd",
  "semver",
  "sg-std 2.4.0",
  "sg-tba",
@@ -2427,7 +2434,6 @@ dependencies = [
  "sg-std 2.4.0",
  "sg-tba",
  "sg721-base",
- "sg82-base",
  "stargaze-fair-burn",
  "thiserror",
 ]

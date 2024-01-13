@@ -5,9 +5,10 @@ mod tests {
     };
     use cw22::set_contract_supported_interface;
     use cw82::ValidSignatureResponse;
+    use sg_tba::TokenInfo;
     use crate::{
         contract::{instantiate, query},
-        msg::{PayloadInfo, InstantiateMsg, QueryMsg}, query::verify_arbitrary,
+        msg::{InstantiateMsg, QueryMsg}, query::verify_arbitrary,
     };
 
     const MSG: &str = "dGVzdA==";
@@ -54,19 +55,18 @@ mod tests {
             info.clone(), 
             InstantiateMsg {
                 owner: ACCOUNT.into(),
-                pubkey: Binary::from_base64(PUBKEY).unwrap(),
-                token_contract: "test".into(),
-                token_id: "test".into()
+                account_data: Binary::from_base64(PUBKEY).unwrap(),
+                token_info: TokenInfo {
+                    collection: "test".into(),
+                    id: "test".into()
+                },
             }
         ).unwrap();
 
         let msg = QueryMsg::ValidSignature { 
             data: to_json_binary(&MSG).unwrap(), 
             signature: Binary::from_base64(SIGNATURE).unwrap(), 
-            payload: Some(to_json_binary(&PayloadInfo {
-                account: ACCOUNT.into(),
-                algo: "amino".into()
-            }).unwrap())
+            payload: None
         };
 
         let query_res = query(

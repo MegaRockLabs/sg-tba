@@ -6,12 +6,11 @@ use cw_ownable::{get_ownership, initialize_owner};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 
-use sg_tba::{MigrateAccountMsg, TokenInfo};
 use sg_std::Response;
 
 use crate::{
     state::{REGISTRY_ADDRESS, TOKEN_INFO, PUBKEY, STATUS, MINT_CACHE, SERIAL}, 
-    msg::{QueryMsg, InstantiateMsg, ExecuteMsg, Status}, 
+    msg::{QueryMsg, InstantiateMsg, ExecuteMsg, Status, MigrateMsg}, 
     error::ContractError, 
     query::{can_execute, valid_signature, valid_signatures, known_tokens, assets, full_info}, 
     execute::{
@@ -68,14 +67,11 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
 
     initialize_owner(deps.storage, deps.api, Some(msg.owner.as_str()))?;
     
-    TOKEN_INFO.save(deps.storage, &TokenInfo {
-        collection: msg.token_contract,
-        id: msg.token_id
-    })?;
+    TOKEN_INFO.save(deps.storage, &msg.token_info)?;
 
     REGISTRY_ADDRESS.save(deps.storage, &info.sender.to_string())?;
     STATUS.save(deps.storage, &Status { frozen: false })?;
-    PUBKEY.save(deps.storage, &msg.pubkey)?;
+    PUBKEY.save(deps.storage, &msg.account_data)?;
     SERIAL.save(deps.storage, &0u128)?;
 
     Ok(Response::default()
@@ -142,10 +138,10 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
         
         ExecuteMsg::UpdateOwnership { 
             new_owner, 
-            new_pubkey 
-        } => try_updating_ownership(deps, info.sender, new_owner, new_pubkey),
+            new_account_data 
+        } => try_updating_ownership(deps, info.sender, new_owner, new_account_data),
 
-        ExecuteMsg::UpdatePubkey { new_pubkey } => try_changing_pubkey(deps, info.sender, new_pubkey),
+        ExecuteMsg::UpdateAccountData { new_account_data } => try_changing_pubkey(deps, info.sender, new_account_data),
 
         ExecuteMsg::Purge {} => try_purging(deps, info.sender),
     }
@@ -200,7 +196,7 @@ pub fn query(deps: Deps, env : Env, msg: QueryMsg) -> StdResult<Binary> {
 
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(deps: DepsMut, _: Env, _: MigrateAccountMsg) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, _: Env, _: MigrateMsg) -> StdResult<Response> {
     STATUS.save(deps.storage, &Status { frozen: false })?;
     Ok(Response::default())
 }

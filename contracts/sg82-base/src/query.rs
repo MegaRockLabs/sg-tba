@@ -7,7 +7,7 @@ use sg_tba::TokenInfo;
 
 use crate::{
     state::{PUBKEY, KNOWN_TOKENS, TOKEN_INFO, STATUS, REGISTRY_ADDRESS}, 
-    utils::{generate_amino_transaction_string, parse_payload, is_ok_cosmos_msg, status_ok, assert_status}, 
+    utils::{generate_amino_transaction_string, is_ok_cosmos_msg, status_ok, assert_status}, 
     msg::{AssetsResponse, FullInfoResponse}
 };
 
@@ -41,15 +41,19 @@ pub fn valid_signature(
     signature: Binary,
     payload: &Option<Binary>
 ) -> StdResult<ValidSignatureResponse> {
-
     let pk: Binary = PUBKEY.load(deps.storage)?;
-    let payload = parse_payload(payload)?;
+    let owner = cw_ownable::get_ownership(deps.storage)?;
+
+    let address = match payload {
+        Some(payload) => from_json(payload)?,
+        None => owner.owner.unwrap().to_string()
+    };
 
     Ok(ValidSignatureResponse {
         is_valid: match assert_status(deps.storage)? {
             true => verify_arbitrary(
                 deps,
-                &payload.account,
+                &address,
                 data,
                 signature,
                 &pk
@@ -70,7 +74,12 @@ pub fn valid_signatures(
     let status_ok = assert_status(deps.storage)?;
 
     let pk: Binary = PUBKEY.load(deps.storage)?;
-    let payload = parse_payload(payload)?;
+    let owner = cw_ownable::get_ownership(deps.storage)?;
+
+    let address = match payload {
+        Some(payload) => from_json(payload)?,
+        None => owner.owner.unwrap().to_string()
+    };
 
     let are_valid : Vec<bool> = signatures
         .into_iter()
@@ -80,7 +89,7 @@ pub fn valid_signatures(
             let data = data.get(i).unwrap().clone();
             verify_arbitrary(
                 deps,
-                &payload.account,
+                &address,
                 data,
                 signature,
                 &pk

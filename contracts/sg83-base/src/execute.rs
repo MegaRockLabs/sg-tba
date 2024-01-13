@@ -1,3 +1,4 @@
+use cosmwasm_schema::serde::Serialize;
 use cosmwasm_std::{
     Env, 
     Binary, 
@@ -12,9 +13,12 @@ use cosmwasm_std::{
 };
 
 use cw83::CREATE_ACCOUNT_REPLY_ID;
-use sg82_base::utils::verify_nft_ownership;
 use sg_std::{Response, CosmosMsg};
-use sg_tba::{TokenInfo, MigrateAccountMsg};
+use sg_tba::{verify_nft_ownership, TokenInfo, 
+    InstantiateAccountMsg, MigrateAccountMsg, ExecuteAccountMsg
+};
+
+type AccountMsg = ExecuteAccountMsg<Binary>;
 
 use crate::{
     state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, SUDO_PARAMS, FAIR_BURN_INFO},
@@ -22,15 +26,16 @@ use crate::{
     error::ContractError, utils::fair_split
 };
 
-pub fn create_account(
+pub fn create_account<T: Serialize>(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
     chain_id: String,
     code_id: u64,
     token_info: TokenInfo,
-    pubkey: Binary,
-    reset: bool
+    account_data: T,
+    create_for: Option<String>,
+    reset: bool,
 ) -> Result<Response, ContractError> {
 
     if env.block.chain_id != chain_id {
@@ -41,7 +46,14 @@ pub fn create_account(
         return Err(ContractError::InvalidCodeId {})
     }
 
-    verify_nft_ownership(&deps.querier, info.sender.as_str(), token_info.clone())?;
+    let is_manager = SUDO_PARAMS.load(deps.storage)?.managers.contains(&info.sender.to_string());
+    let owner = create_for.unwrap_or(info.sender.to_string());
+
+    if owner != info.sender && !is_manager {
+        return Err(ContractError::Unauthorized {})
+    }
+
+    verify_nft_ownership(&deps.querier, owner.as_str(), token_info.clone())?;
 
     let mut res = Response::default()
         .add_attributes(vec![
@@ -68,7 +80,7 @@ pub fn create_account(
 
         res = res.add_message(WasmMsg::Execute {
             contract_addr: token_address.unwrap(),
-            msg: to_json_binary(&sg82_base::msg::ExecuteMsg::Purge {})?,
+            msg: to_json_binary(&AccountMsg::Purge {})?,
             funds: vec![]
         });
 
@@ -82,11 +94,10 @@ pub fn create_account(
     LAST_ATTEMPTING.save(deps.storage, &token_info)?;
 
 
-    let init_msg = sg82_base::msg::InstantiateMsg {
+    let init_msg = InstantiateAccountMsg {
         owner: info.sender.to_string(),
-        token_contract: token_info.collection.clone(),
-        token_id: token_info.id.clone(),
-        pubkey
+        token_info: token_info.clone(),
+        account_data
     };
 
 
@@ -131,14 +142,17 @@ pub fn update_account_owner(
     deps: DepsMut,
     sender: Addr,
     token_info: TokenInfo,
-    new_pubkey: Option<Binary>,
+    new_account_data: Option<Binary>,
     funds: Vec<Coin>,
-    update_for: Option<Addr>
+    update_for: Option<String>
 ) -> Result<Response, ContractError> {
 
     let is_manager = SUDO_PARAMS.load(deps.storage)?.managers.contains(&sender.to_string());
-    
-    let owner = update_for.unwrap_or(sender.clone());
+    let owner = update_for.unwrap_or(sender.to_string());
+     // only admin can update ownership but only if the new address is the token owner
+     if owner != sender && !is_manager {
+        return Err(ContractError::Unauthorized {})
+    }
 
     verify_nft_ownership(&deps.querier, owner.as_str(), token_info.clone())?;
 
@@ -147,14 +161,10 @@ pub fn update_account_owner(
         (token_info.collection.as_str(), token_info.id.as_str())
     )?;
 
-    // only admin can update ownership but only if the new address is the token owner
-    if owner != sender && !is_manager {
-        return Err(ContractError::Unauthorized {})
-    }
 
-    let msg = sg82_base::msg::ExecuteMsg::UpdateOwnership { 
+    let msg = ExecuteAccountMsg::UpdateOwnership { 
         new_owner: owner.to_string(), 
-        new_pubkey
+        new_account_data
     };
 
     let msg = CosmosMsg::Wasm(WasmMsg::Execute { 

@@ -1,5 +1,4 @@
 use std::str::FromStr;
-
 use super::chain::Chain;
 use super::msg::ProxyInstantiateMsg;
 use cosm_orc::orchestrator::cosm_orc::tokio_block;
@@ -196,13 +195,15 @@ pub fn create_token_account(
 
     let chain_id = chain.cfg.orc_cfg.chain_cfg.chain_id.clone();
 
-    let init_msg = sg83_base::msg::CreateInitMsg {
-        pubkey,
+    let init_msg = sg_tba::CreateAccountPayload { 
         token_info: TokenInfo {
             collection: token_contract,
             id: token_id,
-        },
+        }, 
+        account_data: pubkey,
+        create_for: None, 
     };
+
 
     let code_id = chain.orc.contract_map.code_id(ACOUNT_NAME)?;
 
@@ -232,12 +233,13 @@ pub fn reset_token_account(
 
     let chain_id = chain.cfg.orc_cfg.chain_cfg.chain_id.clone();
 
-    let init_msg = sg83_base::msg::CreateInitMsg {
-        pubkey,
+    let init_msg = sg_tba::CreateAccountPayload { 
         token_info: TokenInfo {
             collection: token_contract,
             id: token_id,
-        },
+        }, 
+        account_data: pubkey,
+        create_for: None,
     };
 
     let code_id = chain.orc.contract_map.code_id(ACOUNT_NAME)?;

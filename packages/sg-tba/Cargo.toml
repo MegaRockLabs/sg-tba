@@ -11,5 +11,9 @@ cosmwasm-schema = { workspace = true }
 cosmwasm-std    = { workspace = true }
 schemars        = { workspace = true }
 
+cw82            = { workspace = true }
+cw83            = { workspace = true }
 
-[dev-dependencies]
+cw721           = { workspace = true }
+sg-std          = { workspace = true }
+sg721-base      = { workspace = true, features = ["library"] }

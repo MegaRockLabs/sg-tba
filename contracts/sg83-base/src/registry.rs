@@ -1,7 +1,7 @@
-use cosmwasm_schema::cw_serde;
+use cosmwasm_schema::{cw_serde, serde::Serialize};
 use cosmwasm_std::{Deps, to_json_binary, Binary, Addr, Coin, StdResult, CosmosMsg, SubMsg, ReplyOn};
 use cw83::{Cw83RegistryBase, CREATE_ACCOUNT_REPLY_ID};
-use sg_tba::TokenInfo;
+use sg_tba::{TokenInfo, InstantiateAccountMsg};
 
 
 pub fn construct_label(
@@ -29,30 +29,28 @@ impl Cw83TokenRegistryContract {
         Cw83RegistryBase(self.addr())
     }
 
-    fn init_binary(
+    fn init_binary<T: Serialize>(
         &self,
         owner: String,
-        pubkey: Binary,
-        token_contract: String, 
-        token_id: String,
+        token_info: TokenInfo,
+        account_data: T,
     ) -> StdResult<Binary> {
 
-        let msg = sg82_base::msg::InstantiateMsg {
+        let msg = InstantiateAccountMsg {
             owner,
-            pubkey,
-            token_contract: token_contract.clone(),
-            token_id: token_id.clone(),
+            token_info,
+            account_data,
         };
 
         to_json_binary(&msg)
     }
 
-    pub fn create_account_init_msg(
+    pub fn create_account_init_msg<T: Serialize>(
         &self, 
         code_id: u64, 
         owner: String,
-        info: &TokenInfo,
-        pubkey: Binary,
+        token_info: TokenInfo,
+        account_data: T,
         funds: Vec<Coin>,
         serial: Option<u64>
     ) -> StdResult<CosmosMsg> {
@@ -61,21 +59,20 @@ impl Cw83TokenRegistryContract {
             code_id,
             self.init_binary(
                 owner,
-                pubkey,
-                info.collection.clone(),
-                info.id.clone(),
+                token_info.clone(),
+                account_data
             )?,
             funds,
-            construct_label(info, serial)
+            construct_label(&token_info, serial)
         )
     }
 
-    pub fn create_account_sub_msg(
+    pub fn create_account_sub_msg<T: Serialize>(
         &self, 
         code_id: u64, 
         owner: String,
-        info: &TokenInfo,
-        pubkey: Binary,
+        token_info: TokenInfo,
+        account_data: T,
         funds: Vec<Coin>,
         serial: Option<u64>
     ) -> StdResult<SubMsg> {
@@ -85,8 +82,8 @@ impl Cw83TokenRegistryContract {
             msg: self.create_account_init_msg(
                 code_id,
                 owner,
-                info,
-                pubkey,
+                token_info,
+                account_data,
                 funds,
                 serial
             )?,

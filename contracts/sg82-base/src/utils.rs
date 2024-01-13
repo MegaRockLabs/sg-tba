@@ -1,7 +1,14 @@
-use cosmwasm_std::{Addr, StdResult, Binary, StdError, WasmMsg, Storage, QuerierWrapper, from_json};
+use cosmwasm_std::{Addr, StdResult, Binary, StdError, WasmMsg, Storage, QuerierWrapper, from_json, CanonicalAddr};
 use sg_std::CosmosMsg;
-use sg_tba::TokenInfo;
-use crate::{msg::PayloadInfo, error::ContractError, state::{STATUS, REGISTRY_ADDRESS}};
+
+use k256::sha2::{Sha256, Digest};
+use bech32::{ToBase32, Variant};
+use ripemd::Ripemd160;
+
+use crate::{error::ContractError, state::{STATUS, REGISTRY_ADDRESS}};
+
+pub const HRP: &str = "stars";
+
 
 pub fn assert_status(
     store: &dyn Storage
@@ -76,27 +83,6 @@ pub fn is_registry(
 }
 
 
-pub fn parse_payload(
-    payload: &Option<Binary>
-) -> StdResult<PayloadInfo> {
-
-    if payload.is_none() {
-        return Err(StdError::GenericErr { 
-            msg: "Invalid payload. Must have an 'account' address and 'algo' must be 'amino_arbitrary'".into() 
-        })
-    }
-
-    let payload : PayloadInfo = from_json(payload.as_ref().unwrap())?;
-    
-    if payload.account.len() < 1 || payload.algo != "amino_arbitrary" {
-        return Err(StdError::GenericErr { 
-            msg: "Invalid payload. Must have an 'account' address and 'amino_arbitrary' must be 'amino'".into() 
-        })
-    }
-
-    Ok(payload)
-}
-
 
 pub fn generate_amino_transaction_string(signer: &str, data: &str) -> String {
     format!(
@@ -106,24 +92,26 @@ pub fn generate_amino_transaction_string(signer: &str, data: &str) -> String {
 }
 
 
-pub fn verify_nft_ownership(
-    querier: &QuerierWrapper,
-    sender: &str,
-    token_info: TokenInfo
-) -> StdResult<()> {
+pub fn pubkey_to_account(pubkey: &Binary) -> String {
+    let base32_addr = pubkey_to_canonical(pubkey).0.as_slice().to_base32();
+    let account: String = bech32::encode(HRP, base32_addr, Variant::Bech32).unwrap();
+    account
+}
 
-    let owner_res = querier
-            .query_wasm_smart::<cw721::OwnerOfResponse>(
-                token_info.collection, 
-            &sg721_base::QueryMsg::OwnerOf {
-                token_id: token_info.id,
-                include_expired: None
-            }
-    )?;
 
-    if owner_res.owner.as_str() != sender {
-        return Err(StdError::GenericErr { msg: ContractError::Unauthorized {}.to_string() });
-    }
+fn pubkey_to_canonical(pubkey: &Binary) -> CanonicalAddr {
+    let mut hasher = Ripemd160::new();
+    hasher.update(sha_256(&pubkey.0));
+    CanonicalAddr(Binary(hasher.finalize().to_vec()))
+}
 
-    Ok(())
+
+fn sha_256(data: &[u8]) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(data);
+    let hash = hasher.finalize();
+
+    let mut result = [0u8; 32];
+    result.copy_from_slice(hash.as_slice());
+    result
 }

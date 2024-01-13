@@ -5,7 +5,7 @@ use cw83::{registry_query, registry_execute,
     AccountQuery as AccountQueryBase,
     AccountInfoResponse as AccountInfoResponseBase,
 };
-use sg_tba::{MigrateAccountMsg, TokenInfo, RegistryParams};
+use sg_tba::{MigrateAccountMsg, TokenInfo, RegistryParams, CreateAccountPayload};
 
 
 #[cw_serde]
@@ -30,15 +30,6 @@ pub struct InstantiateMsg {
 }
 
 
-/// An extenstion for [cw83::CreateAccountMsg]
-#[cw_serde]
-pub struct CreateInitMsg {
-    /// Non-Fungible Token Info that the created account will be linked to 
-    pub token_info: TokenInfo,
-
-    /// Public key of the account used for (cw81 signature verification)
-    pub pubkey: Binary,
-}
 
 /// A List of the collections registered in the registry
 #[cw_serde]
@@ -87,7 +78,7 @@ pub struct CollectionAccountsResponse {
 
 pub type AccountQuery = AccountQueryBase<TokenInfo>;
 pub type AccountInfoResponse = AccountInfoResponseBase<Empty>;
-pub type CreateAccountMsg = CreateAccountMsgBase<CreateInitMsg>;
+pub type CreateAccountMsg = CreateAccountMsgBase<CreateAccountPayload>;
 
 
 #[registry_query]
@@ -145,7 +136,7 @@ pub enum ExecuteMsg {
         /// New public key of the account used for (cw81 signature verification)
         new_pubkey: Option<Binary>,
         /// Admin only parameter to update the account on behalf of another user that holds the token
-        update_for: Option<Addr>,
+        update_for: Option<String>,
     },
 
     /// Create a new token-bound account. Access the old one will be forever lost
@@ -178,6 +169,4 @@ pub enum SudoMsg {
     UpdateManagers {
         managers: Vec<String>
     },
-
-
 }

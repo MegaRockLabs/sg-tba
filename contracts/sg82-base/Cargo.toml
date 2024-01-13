@@ -37,3 +37,6 @@ cw721           = { workspace = true }
 sg721-base      = { workspace = true, features = ["library"] }
 sg-tba          = { workspace = true }
 sg-std          = { workspace = true }
+
+ripemd          = { version = "0.1.3", default-features = false }
+bech32          = { version = "0.9.1" }

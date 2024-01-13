@@ -61,7 +61,8 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
             create.chain_id,
             create.code_id, 
             create.msg.token_info, 
-            create.msg.pubkey,
+            create.msg.account_data,
+            create.msg.create_for,
             false
         ),
 
@@ -74,7 +75,8 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
             create.chain_id,
             create.code_id, 
             create.msg.token_info, 
-            create.msg.pubkey,
+            create.msg.account_data,
+            create.msg.create_for,
             true
         ),
 

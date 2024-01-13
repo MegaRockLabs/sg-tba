@@ -4,9 +4,10 @@ use cosmwasm_std::{
 
 use cw_ownable::{assert_owner, initialize_owner, is_owner};
 use sg_std::{CosmosMsg, Response};
+use sg_tba::verify_nft_ownership;
 use crate::{
     error::ContractError, 
-    utils::{is_ok_cosmos_msg, assert_status, assert_registry, verify_nft_ownership}, 
+    utils::{is_ok_cosmos_msg, assert_status, assert_registry}, 
     state::{KNOWN_TOKENS, PUBKEY, STATUS, MINT_CACHE, TOKEN_INFO, REGISTRY_ADDRESS, SERIAL}, 
     msg::Status, 
 };

@@ -14,6 +14,7 @@ cosmwasm-std    = { workspace = true, features = ["staking", "stargate" ] }
 cosmwasm-schema = { workspace = true }
 schemars        = { workspace = true }
 cw721           = { workspace = true }
-sg-std          = { workspace = true }
 sg721-base      = { workspace = true, features = ["library"] }
+
+sg-std          = { workspace = true }
 sg-fair-burn    = { workspace = true, features = ["library"] }

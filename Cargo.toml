@@ -35,8 +35,9 @@ cw83                    = { git = "https://github.com/megarocklabs/cw-extra", pa
 cw22                    = { git = "https://github.com/aura-nw/cw-plus", package = "cw22" }
 cw721                   = "0.18.0"
 
-sg-std                  = { version = "3.2.0" }
-sg-fair-burn            = { version = "1.0.4", package="stargaze-fair-burn", features = ["library"] } 
+sg-std                  = { git = "https://github.com/kromsten/core", package = "sg-std" }
+sg-fair-burn            = { git = "https://github.com/kromsten/core", package = "stargaze-fair-burn" }
+
 
 sg721                   = "3.3.0"
 sg721-base              = "3.3.0"
@@ -44,6 +45,9 @@ sg721-base              = "3.3.0"
 sg-tba                  = { path = "packages/sg-tba" }
 sg82-base               = { path = "contracts/sg82-base" }
 sg83-base               = { path = "contracts/sg83-base" }
+
+[patch.crates-io]
+sg-std                  = { git = "https://github.com/kromsten/core", package = "sg-std" }
 
 
 [profile.release.package.sg82-base]

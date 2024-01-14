@@ -903,7 +903,7 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
- "sg-std 2.4.0",
+ "sg-std 3.2.0",
  "sg-tba",
  "sg721",
  "sg721-base",
@@ -2349,11 +2349,10 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw721 0.18.0",
- "cw82",
- "cw83",
  "schemars",
- "sg-std 2.4.0",
+ "sg-std 3.2.0",
  "sg721-base",
+ "stargaze-fair-burn",
 ]
 
 [[package]]
@@ -2410,7 +2409,7 @@ dependencies = [
  "k256 0.13.2",
  "ripemd",
  "semver",
- "sg-std 2.4.0",
+ "sg-std 3.2.0",
  "sg-tba",
  "sg721-base",
  "sha2 0.10.8",
@@ -2431,10 +2430,9 @@ dependencies = [
  "cw82",
  "cw83",
  "semver",
- "sg-std 2.4.0",
+ "sg-std 3.2.0",
  "sg-tba",
  "sg721-base",
- "stargaze-fair-burn",
  "thiserror",
 ]
 

@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, StdResult, Binary, StdError, WasmMsg, Storage, QuerierWrapper, from_json, CanonicalAddr};
+use cosmwasm_std::{Addr, StdResult, Binary, StdError, WasmMsg, Storage, QuerierWrapper, CanonicalAddr};
 use sg_std::CosmosMsg;
 
 use k256::sha2::{Sha256, Digest};

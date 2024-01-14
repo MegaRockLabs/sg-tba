@@ -110,7 +110,7 @@ pub fn create_account<T: Serialize>(
 
 
 
-    res = stargaze_fair_burn::append_fair_burn_msg(
+    res = sg_tba::append_fair_burn_msg(
         &fb_info.fair_burn_addr, 
         fair_burn_funds, 
         Some(&fb_info.developer_addr), 

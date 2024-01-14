@@ -76,8 +76,7 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
     PUBKEY.save(deps.storage, &msg.account_data)?;
     SERIAL.save(deps.storage, &0u128)?;
 
-    Ok(Response::default()
-)
+    Ok(Response::default())
 }
 
 
@@ -88,7 +87,7 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
     if !REGISTRY_ADDRESS.exists(deps.storage) {
         return Err(ContractError::Deleted {})
     }
-    SERIAL.update(deps.storage, |s| Ok::<u128, StdError>(s + 1))?;
+    SERIAL.update(deps.storage, |s| Ok::<u128, StdError>((s + 1) % u128::MAX))?;
 
     match msg {
         ExecuteMsg::Execute { msgs } => try_executing(deps.as_ref(), info.sender, msgs),

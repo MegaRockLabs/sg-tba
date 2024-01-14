@@ -9,7 +9,7 @@ use cw83::CREATE_ACCOUNT_REPLY_ID;
 use sg_std::Response;
 
 use crate::{
-    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, COL_TOKEN_COUNTS, SUDO_PARAMS},
+    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, COL_TOKEN_COUNTS, SUDO_PARAMS, FAIR_BURN_INFO},
     msg::{InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, SudoMsg}, 
     sudo::{sudo_update_params, sudo_update_fair_burn_address, sudo_update_allowed_sg82_code_ids, sudo_update_managers}, 
     execute::{create_account, update_account_owner, migrate_account}, 
@@ -38,6 +38,7 @@ pub fn instantiate(deps: DepsMut, _ : Env, _ : MessageInfo, msg : InstantiateMsg
     )?;
 
     SUDO_PARAMS.save(deps.storage, &msg.params)?;
+    FAIR_BURN_INFO.save(deps.storage, &msg.fee_burn_info)?;
 
     Ok(Response::new()
         .add_attributes(vec![

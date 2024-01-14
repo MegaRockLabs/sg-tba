@@ -4,7 +4,7 @@ use crate::helpers::{
     chain::Chain,
     helper::{
         instantiate_registry, instantiate_collection, instantiate_proxy, 
-        mint_token, query_token_owner, full_setup
+        mint_token, query_token_owner, full_setup, instantiate_fair_burn, get_init_address
     },
 };
 
@@ -14,7 +14,11 @@ use crate::helpers::{
 #[ignore]
 fn test_instantiate_registry(chain: &mut Chain) {
     let user = chain.cfg.users[0].clone();
-    instantiate_registry(chain, user.account.address, &user.key).unwrap();
+
+    let res_fb = instantiate_fair_burn(chain, user.account.address.clone(), &user.key).unwrap();
+    let fair_burn = get_init_address(res_fb.res);
+
+    instantiate_registry(chain, user.account.address, &user.key, fair_burn).unwrap();
 }
 
 

@@ -870,7 +870,7 @@ checksum = "545b22097d44f8a9581187cdf93de7a71e4722bf51200cfaba810865b49a495d"
 
 [[package]]
 name = "e2e"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
  "assert_matches",
  "async-trait",
@@ -899,6 +899,7 @@ dependencies = [
  "sg721-base",
  "sg82-base",
  "sg83-base",
+ "stargaze-fair-burn",
  "test-context",
  "tokio",
 ]
@@ -2316,7 +2317,7 @@ dependencies = [
 
 [[package]]
 name = "sg-tba"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -2365,7 +2366,7 @@ dependencies = [
 
 [[package]]
 name = "sg82-base"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
  "bech32",
  "cosmwasm-schema",
@@ -2390,7 +2391,7 @@ dependencies = [
 
 [[package]]
 name = "sg83-base"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",

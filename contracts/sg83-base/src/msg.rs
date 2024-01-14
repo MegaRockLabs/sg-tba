@@ -133,8 +133,8 @@ pub enum ExecuteMsg {
     UpdateAccountOwnership {
         /// Non-Fungible Token Info that the existing account is linked to
         token_info: TokenInfo,
-        /// New public key of the account used for (cw81 signature verification)
-        new_pubkey: Option<Binary>,
+        /// New data of the account used for (cw81 signature verification)
+        new_account_data: Option<Binary>,
         /// Admin only parameter to update the account on behalf of another user that holds the token
         update_for: Option<String>,
     },

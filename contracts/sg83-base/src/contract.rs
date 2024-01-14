@@ -89,13 +89,13 @@ pub fn execute(deps: DepsMut, env : Env, info : MessageInfo, msg : ExecuteMsg)
 
         ExecuteMsg::UpdateAccountOwnership { 
             token_info, 
-            new_pubkey ,
+            new_account_data ,
             update_for
         } => update_account_owner(
             deps, 
             info.sender, 
             token_info, 
-            new_pubkey, 
+            new_account_data, 
             info.funds,
             update_for
         )

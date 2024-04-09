@@ -1,4 +1,4 @@
-use cosmwasm_std::StdError;
+use cosmwasm_std::{OverflowError, StdError};
 use cw_utils::{ParseReplyError, PaymentError};
 use thiserror::Error;
 
@@ -9,6 +9,9 @@ pub enum ContractError {
 
     #[error("{0}")]
     Payment(#[from] PaymentError),
+
+    #[error("{0}")]
+    Overflow(#[from] OverflowError),
 
     #[error("Insufficient fee: expected {0}, got {1}")]
     InsufficientFee(u128, u128),
@@ -33,6 +36,7 @@ pub enum ContractError {
 
     #[error("Account for the given token already exists. Use `reset_account` to overwrite it and `migrate_account` to update it to a newer version")]
     AccountExists {},
+
 
     #[error("Semver parsing error: {0}")]
     SemVer(String),

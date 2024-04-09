@@ -44,10 +44,14 @@ pub fn collections(
         .enumerate()
         .filter(|(i, _)| *i >= skip)
         .take(limit)
-        .map(|(_, c) | c.unwrap())
-        .collect::<Vec<String>>();
+        .map(|(_, c) | c)
+        .collect::<StdResult<Vec<String>>>()
+        .unwrap_or(vec![]);
 
-    Ok(CollectionsResponse { collections })
+    Ok(CollectionsResponse { 
+        total: collections.len() as u32,
+        collections
+    })
 }
 
 

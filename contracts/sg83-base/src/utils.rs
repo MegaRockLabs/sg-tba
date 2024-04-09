@@ -1,5 +1,5 @@
 use cosmwasm_std::{Coin, Storage, MessageInfo, ensure};
-use cw_utils::{must_pay, PaymentError};
+use cw_utils::PaymentError;
 use sg_tba::RegistryParams;
 use crate::{error::ContractError, state::SUDO_PARAMS};
 
@@ -13,29 +13,33 @@ pub fn fair_split(
 
     let params = SUDO_PARAMS.load(storage)?;
 
-    let mut fair_burn_funds = Vec::<Coin>::with_capacity(info.funds.len());
+    let mut fair_burn_funds = Vec::<Coin>::with_capacity(1);
     let mut acc_forwards_funds= Vec::<Coin>::with_capacity(info.funds.len());
-    let mut fee_coin_found = false;
 
     for coin in info.funds.iter() {
+
+        if !fair_burn_funds.is_empty() {
+            acc_forwards_funds.push(coin.clone());
+            continue;
+        }
+
         let fee_coin = params.creation_fees.iter().find(|c| c.denom == coin.denom);
 
         if let Some(fee_coin) = fee_coin {
-            fee_coin_found = true;
 
-            let amount = must_pay(info, &fee_coin.denom)?;
-
-            ensure!(amount >= fee_coin.amount, ContractError::InsufficientFee(
+            ensure!(fee_coin.amount <= coin.amount, ContractError::InsufficientFee(
                 fee_coin.amount.u128(), 
-                amount.u128()
+                coin.amount.u128()
             ));
 
             fair_burn_funds.push(fee_coin.clone());
 
-            if amount > fee_coin.amount {
+            let remaining = coin.amount.checked_sub(fee_coin.amount)?;
+
+            if !remaining.is_zero() {
                 acc_forwards_funds.push(Coin {
                     denom: fee_coin.denom.clone(),
-                    amount: amount - fee_coin.amount
+                    amount: remaining
                 });
             }
         } else {
@@ -43,7 +47,7 @@ pub fn fair_split(
         }
     }
 
-    ensure!(fee_coin_found, ContractError::NoFeeTokens {});
+    ensure!(!fair_burn_funds.is_empty(), ContractError::NoFeeTokens {});
 
     Ok((fair_burn_funds, acc_forwards_funds))
 

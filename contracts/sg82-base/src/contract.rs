@@ -70,7 +70,6 @@ pub fn instantiate(deps: DepsMut, _ : Env, info : MessageInfo, msg : Instantiate
     initialize_owner(deps.storage, deps.api, Some(msg.owner.as_str()))?;
     
     TOKEN_INFO.save(deps.storage, &msg.token_info)?;
-
     REGISTRY_ADDRESS.save(deps.storage, &info.sender.to_string())?;
     STATUS.save(deps.storage, &Status { frozen: false })?;
     PUBKEY.save(deps.storage, &msg.account_data)?;

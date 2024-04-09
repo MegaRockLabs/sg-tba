@@ -35,6 +35,8 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub struct CollectionsResponse {
     /// Contract addresses of each collections
+    pub total: u32,
+    /// 
     pub collections: Vec<String>,
 
 }

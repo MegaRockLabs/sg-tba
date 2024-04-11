@@ -1,7 +1,9 @@
 use cosmwasm_schema::{cw_serde, serde::Serialize};
-use cosmwasm_std::{Deps, to_json_binary, Binary, Addr, Coin, StdResult, CosmosMsg, SubMsg, ReplyOn};
+use cosmwasm_std::{to_json_binary, Addr, Binary, Coin, CosmosMsg, Deps, Querier, QuerierWrapper, ReplyOn, StdResult, SubMsg};
 use cw83::{Cw83RegistryBase, CREATE_ACCOUNT_REPLY_ID};
-use sg_tba::{TokenInfo, InstantiateAccountMsg};
+use sg_tba::{InstantiateAccountMsg, RegistryParams, TokenInfo};
+
+use crate::msg::QueryMsg;
 
 
 pub fn construct_label(
@@ -97,6 +99,16 @@ impl Cw83TokenRegistryContract {
         deps: Deps,
     ) -> StdResult<bool> {
         self.cw83_wrap().supports_interface(&deps.querier)
+    }
+
+    pub fn query_params(
+        &self,
+        querier: QuerierWrapper,
+    ) -> StdResult<RegistryParams> {
+        querier.query_wasm_smart(
+            self.addr(), 
+            &QueryMsg::RegistryParams {},
+        )
     }
 
 }

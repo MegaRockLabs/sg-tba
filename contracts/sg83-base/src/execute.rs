@@ -21,7 +21,7 @@ use sg_tba::{verify_nft_ownership, TokenInfo,
 type AccountMsg = ExecuteAccountMsg<Binary>;
 
 use crate::{
-    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, SUDO_PARAMS, FAIR_BURN_INFO},
+    state::{LAST_ATTEMPTING, TOKEN_ADDRESSES, SUDO_PARAMS},
     registry::construct_label, 
     error::ContractError, utils::fair_split
 };
@@ -101,10 +101,10 @@ pub fn create_account<T: Serialize>(
     };
 
 
-    let fb_info = FAIR_BURN_INFO.load(deps.storage)?;
+    //let fb_info = FAIR_BURN_INFO.load(deps.storage)?;
 
     let (
-        fair_burn_funds, 
+        _, 
         acc_forwards_funds
     ) = fair_split(deps.storage, &info)?;
 
